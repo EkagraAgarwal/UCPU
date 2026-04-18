@@ -1,133 +1,34 @@
-# Wave Energy Prediction Buoy: Real-Time Edge Analytics
+# BluePulse Node - Integrated Ocean Buoy System
 
-[![Project Status: Alpha](https://img.shields.io/badge/Project%20Status-Alpha-yellow.svg)](https://github.com/EkagraAgarwal/UCPU)
-[![Platform: Arduino Uno Q](https://img.shields.io/badge/Platform-Arduino%20Uno%20Q-blue.svg)](https://www.arduino.cc/)
-[![Powered By: Qualcomm](https://img.shields.io/badge/Powered%20By-Qualcomm-red.svg)](https://www.qualcomm.com/)
+Professional-grade firmware for the Arduino Modulino platform, designed for real-time ocean current analysis and environmental monitoring.
 
-## 🌊 Project Overview
+## 🚀 Features
 
-This project is a remote marine device developed as a collaboration between the **University of California** and **Purdue University**. Built on the **Qualcomm-enhanced Arduino Uno Q**, it is designed to predict wave energy potential and turbine power generation in real-time, providing a **30-60 second lead time** before waves reach the energy conversion system.
+- **Tilt-Compensated Speed Estimation**: 3D orbital velocity calculation using accelerometer/gyroscope fusion with Earth-frame rotation.
+- **Environmental Monitoring**: Integrated temperature and water depth (submersion) sensing.
+- **Visual Feedback**: Real-time water level visualization on the Uno R4 LED Matrix.
+- **Advanced Signal Processing**: 2nd order low-pass filtering and trapezoidal integration for noise reduction.
 
-By leveraging **Sensor Fusion** and **Edge AI (TensorFlow Lite)**, this system enables grid operators and turbine controllers to anticipate energy surges and optimize power harvesting efficiency.
+## 📂 Project Structure
 
----
+- `UCPU.ino`: Main orchestration logic.
+- `Movement.h/cpp`: High-precision motion tracking module.
+- `Environment.h/cpp`: Temperature and depth sensing module.
+- `Display.h/cpp`: LED Matrix visualization module.
 
-## 🏗️ System Architecture
+## 🛠 Hardware Required
 
-The device operates as an autonomous edge node, processing high-frequency sensor data locally to generate low-latency predictions.
+- Arduino Uno R4 WiFi (or compatible with LED Matrix)
+- Arduino Modulino (Movement & Thermo modules)
+- Analog Water Level Sensor (connected to A0)
+- Arduino Router Bridge
 
-```mermaid
-graph TD
-    subgraph "Edge Node (Arduino Uno Q)"
-        S[Sensors Module] --> DF[Data Fusion Layer]
-        DF --> DE[Decision Engine]
-        DE --> |High Conf| ML[TFLite Prediction]
-        DE --> |Low Conf| HE[Heuristic Fallback]
-        ML --> OM[Output Module]
-        HE --> OM
-        OM --> TX[WiFi Transmitter]
-    end
-    TX --> DB[Real-time Web Dashboard]
-```
+## ⚙️ Setup
 
-### High-Level Block Diagram
-```text
-┌─────────────────────────────────────────────────────────────┐
-│                    ARDUINO UNO Q (Qualcomm)                 │
-├─────────────────────────────────────────────────────────────┤
-│                                                             │
-│   ┌─────────────┐    ┌─────────────┐    ┌─────────────┐     │
-│   │   SENSORS   │───▶│  DECISION   │───▶│  OUTPUT     │     │
-│   │   MODULE    │    │   ENGINE    │    │  MODULE     │     │
-│   └─────────────┘    └─────────────┘    └─────────────┘     │
-│         │                   │                   │           │
-│         ▼                   ▼                   ▼           │
-│   ┌─────────────┐    ┌─────────────┐    ┌─────────────┐     │
-│   │    DATA     │    │  PREDICTION │    │ TRANSMITTER │     │
-│   │   FUSION    │───▶│   ENGINE    │───▶│  (WiFi)     │     │
-│   └─────────────┘    └─────────────┘    └─────────────┘     │
-│                                                             │
-└─────────────────────────────────────────────────────────────┘
-```
+1. Connect the Modulino modules via Qwiic/I2C.
+2. Connect the water level sensor to `A0`.
+3. Power the system and **keep the buoy flat and still** for 3 seconds during the calibration phase.
+4. Open the Serial Monitor at `115200` baud or use the Serial Plotter to visualize current speed and wave patterns.
 
 ---
-
-## 🔌 Hardware Components
-
-| Sensor | Purpose | Data Type |
-|:-------|:--------|:----------|
-| **Temp/Humidity** | Atmospheric pressure correlation with wave patterns | Float (°C / %) |
-| **Tilt Switch** | Measures buoy rocking motion (height/frequency) | Digital/Interrupt |
-| **Water Level** | Direct measurement of local wave height | Analog |
-| **Sound Sensor** | Captures wave crash intensity for calibration | Analog (Peak/RMS) |
-| **Camera** | Computer vision for approaching wave crest detection | Image/Tensor |
-
----
-
-## 🧠 Intelligence Layers
-
-### 1. Data Fusion Layer
-- **Normalization:** Scales raw sensor inputs to `[0, 1]` ranges.
-- **Derivatives:** Calculates rate of change for pressure and motion.
-- **Time-Windowing:** Maintains rolling averages and peak detection buffers.
-
-### 2. Prediction Engine
-*   **Primary: TFLite Model**
-    *   Pre-trained on historical data from **Scripps Institution of Oceanography**.
-    *   Quantized for efficient inference on the Qualcomm processor.
-*   **Secondary: Heuristics**
-    *   Rule-based fallback ensures 100% uptime even if ML confidence drops.
-
-### 3. ML Pipeline
-1.  **Ingestion:** Historical wave height + turbine power output (Scripps Dataset).
-2.  **Engineering:** Feature extraction (wave period, tilt patterns, temp delta).
-3.  **Training:** Time-series regression (Input: 30s window → Output: t+30s prediction).
-4.  **Optimization:** TFLite conversion with INT8 quantization.
-5.  **Deployment:** OTA update to Arduino Uno Q.
-
----
-
-## 📊 Monitoring & Output
-
-The system broadcasts a JSON payload via WiFi to a real-time dashboard:
-
-```json
-{
-  "prediction": {
-    "power_kw": 2.85,
-    "eta_seconds": 32,
-    "confidence": 0.94
-  },
-  "sensors": {
-    "tilt_freq": 0.5,
-    "water_level_m": 1.2
-  },
-  "status": "active"
-}
-```
-
----
-
-## 🚀 Future Roadmap
-
-- [ ] **LoRaWAN Integration:** For long-range transmission in deep-sea deployments.
-- [ ] **Self-Charging:** Solar/Wave energy harvesting for the buoy itself.
-- [ ] **Swarm Intelligence:** Multiple UCPU nodes communicating to create a 3D wave map.
-
----
-
-## 🤝 Contributing
-
-This project was developed during a Hackathon. Contributions, issues, and feature requests are welcome! 
-
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the Branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
----
-
-## ⚖️ License
-
-Distributed under the MIT License. See `LICENSE` for more information.
+*SPDX-License-Identifier: MPL-2.0*
