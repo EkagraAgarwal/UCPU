@@ -1,4 +1,4 @@
-# UCPU: Wave Energy Prediction Buoy
+# Wave Energy Prediction Buoy: Real-Time Edge Analytics
 
 [![Project Status: Alpha](https://img.shields.io/badge/Project%20Status-Alpha-yellow.svg)](https://github.com/EkagraAgarwal/UCPU)
 [![Platform: Arduino Uno Q](https://img.shields.io/badge/Platform-Arduino%20Uno%20Q-blue.svg)](https://www.arduino.cc/)
@@ -6,19 +6,19 @@
 
 ## 🌊 Project Overview
 
-**UCPU** (Unified Control & Prediction Unit) is a remote marine device built on the **Qualcomm-enhanced Arduino Uno Q**. It is designed to predict wave energy potential and turbine power generation in real-time, providing a **30-60 second lead time** before waves reach the energy conversion system.
+This project is a remote marine device developed as a collaboration between the **University of California** and **Purdue University**. Built on the **Qualcomm-enhanced Arduino Uno Q**, it is designed to predict wave energy potential and turbine power generation in real-time, providing a **30-60 second lead time** before waves reach the energy conversion system.
 
-By leveraging **Sensor Fusion** and **Edge AI (TensorFlow Lite)**, UCPU enables grid operators and turbine controllers to anticipate energy surges and optimize power harvesting efficiency.
+By leveraging **Sensor Fusion** and **Edge AI (TensorFlow Lite)**, this system enables grid operators and turbine controllers to anticipate energy surges and optimize power harvesting efficiency.
 
 ---
 
 ## 🏗️ System Architecture
 
-UCPU operates as an autonomous edge node, processing high-frequency sensor data locally to generate low-latency predictions.
+The device operates as an autonomous edge node, processing high-frequency sensor data locally to generate low-latency predictions.
 
 ```mermaid
 graph TD
-    subgraph "UCPU Edge (Arduino Uno Q)"
+    subgraph "Edge Node (Arduino Uno Q)"
         S[Sensors Module] --> DF[Data Fusion Layer]
         DF --> DE[Decision Engine]
         DE --> |High Conf| ML[TFLite Prediction]
