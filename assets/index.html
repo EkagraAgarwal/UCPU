@@ -585,11 +585,16 @@
         // ** Step 6: Live Data Polling (BluePulse Integration) **
         async function fetchLiveData() {
             try {
-                const response = await fetch('/data');
+                // Use a relative path that works regardless of the host
+                const response = await fetch('data'); 
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                
                 const data = await response.json();
+                console.log("BluePulse Data Received:", data);
                 
                 // Update the UI if the info panel is visible
-                if (document.getElementById('tideInfoPanel').style.display === 'block') {
+                const panel = document.getElementById('tideInfoPanel');
+                if (panel && panel.style.display === 'block') {
                     document.getElementById('waterTemp').textContent = data.temperature.toFixed(1);
                     document.getElementById('currentSpeed').textContent = data.speed.toFixed(2);
                     document.getElementById('waterLevel').textContent = data.depth.toFixed(1);

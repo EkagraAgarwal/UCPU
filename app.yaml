@@ -1,5 +1,6 @@
 name: BluePulse
 description: "High-Precision Ocean Wave Analysis and Marine Intelligence"
 ports: []
-bricks: []
+bricks:
+  - arduino:web_ui: {}
 icon: 🌊

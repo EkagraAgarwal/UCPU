@@ -1,1 +1,1 @@
-["TEMP_clean", "PSAL_clean", "current_speed", "hour_sin", "hour_cos", "dayofyear_sin", "dayofyear_cos"]
+["TEMP_clean", "PSAL_clean", "current_speed", "current_speed_lag1", "current_speed_lag2", "current_speed_lag3", "current_speed_mean_3h", "current_speed_std_3h", "current_speed_diff_1h", "psal_diff_1h", "temp_diff_1h", "hour_sin", "hour_cos", "dayofyear_sin", "dayofyear_cos"]
