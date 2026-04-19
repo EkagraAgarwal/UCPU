@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CesiumJS - Tidal Energy Monitoring Globe</title>
-    <!-- CesiumJS Core Library and Styles -->
     <script src="https://cesium.com/downloads/cesiumjs/releases/1.100/Build/Cesium/Cesium.js"></script>
     <link href="https://cesium.com/downloads/cesiumjs/releases/1.100/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
     <style>
@@ -21,18 +20,18 @@
             display: none !important;
         }
         
-        /* Custom Info Panel - 宽度 500px */
         #tideInfoPanel {
             position: absolute;
             top: 20px;
             right: 20px;
-            width: 500px;
-            max-height: 90vh;
+            width: 480px;
+            max-height: calc(100vh - 40px);
             overflow-y: auto;
+            overflow-x: hidden;
             background: rgba(10, 20, 40, 0.9);
             color: #e0f7fa;
-            border-radius: 16px;
-            padding: 24px;
+            border-radius: 14px;
+            padding: 18px;
             backdrop-filter: blur(10px);
             border-left: 4px solid #00ffcc;
             box-shadow: 0 8px 32px rgba(0,0,0,0.6);
@@ -40,51 +39,60 @@
             display: none;
             pointer-events: auto;
             transition: opacity 0.3s ease;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
         }
         
         #tideInfoPanel::-webkit-scrollbar {
-            width: 6px;
-        }
-        #tideInfoPanel::-webkit-scrollbar-track {
-            background: rgba(255,255,255,0.05);
-            border-radius: 3px;
-        }
-        #tideInfoPanel::-webkit-scrollbar-thumb {
-            background: #00ffcc;
-            border-radius: 3px;
+            display: none;
         }
         
         #tideInfoPanel h2 {
-            margin: 0 0 4px 0;
+            margin: 0 0 2px 0;
             color: #00ffcc;
-            font-size: 22px;
+            font-size: 20px;
             text-shadow: 0 0 10px rgba(0,255,204,0.5);
         }
         
         #tideInfoPanel h3 {
             color: #a0bcd8;
-            font-size: 15px;
-            margin: 16px 0 10px 0;
-            padding-bottom: 6px;
+            font-size: 13px;
+            margin: 12px 0 8px 0;
+            padding-bottom: 4px;
             border-bottom: 1px solid rgba(0, 255, 204, 0.3);
         }
         
         .station-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
             margin-bottom: 8px;
+            padding-right: 28px;
+        }
+        
+        .station-info {
+            flex: 1;
         }
         
         .station-subtitle {
             color: #8ab4d6;
-            font-size: 13px;
-            margin-bottom: 4px;
+            font-size: 12px;
+        }
+        
+        .coordinates-inline {
+            color: #8ab4d6;
+            font-size: 11px;
+            text-align: right;
+            white-space: nowrap;
+            margin-right: 8px;
         }
         
         .close-btn {
             position: absolute;
-            top: 16px;
-            right: 20px;
+            top: 14px;
+            right: 14px;
             color: #aaa;
-            font-size: 24px;
+            font-size: 22px;
             font-weight: bold;
             cursor: pointer;
             pointer-events: auto;
@@ -96,66 +104,68 @@
             color: #00ffcc;
         }
         
-        /* Date and Time Display */
-        .datetime-section {
-            background: rgba(0, 255, 204, 0.1);
-            border-radius: 12px;
-            padding: 10px 16px;
-            margin: 16px 0;
-            border: 1px solid rgba(0, 255, 204, 0.2);
-        }
-        
-        .datetime-row {
+        .info-bar {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            background: rgba(0, 255, 204, 0.08);
+            border-radius: 10px;
+            padding: 8px 12px;
+            margin: 10px 0;
+            border: 1px solid rgba(0, 255, 204, 0.15);
+        }
+        
+        .datetime-compact {
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
         
         .date-display {
-            font-size: 14px;
+            font-size: 12px;
             font-weight: 600;
             color: #e0f7fa;
         }
         
         .time-display {
-            font-size: 18px;
+            font-size: 15px;
             font-weight: 700;
             color: #00ffcc;
-            text-shadow: 0 0 8px rgba(0,255,204,0.5);
         }
         
-        /* Status Battery Bar */
-        .status-section {
-            margin: 16px 0;
-        }
-        
-        .status-label-row {
+        .status-compact {
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            margin-bottom: 8px;
+            gap: 6px;
         }
         
-        .status-title {
-            color: #a0bcd8;
-            font-size: 14px;
-        }
-        
-        .status-value {
-            color: #ffd966;
-            font-size: 14px;
+        .status-badge {
+            background: rgba(0, 255, 204, 0.15);
+            padding: 3px 10px;
+            border-radius: 16px;
+            font-size: 12px;
             font-weight: 600;
+            color: #00ffcc;
+        }
+        
+        .live-indicator {
+            display: inline-block;
+            width: 7px;
+            height: 7px;
+            background: #00ff88;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
         }
         
         .battery-container {
             position: relative;
             width: 100%;
-            height: 40px;
+            height: 28px;
             background: rgba(0, 0, 0, 0.3);
-            border-radius: 20px;
-            border: 2px solid rgba(255, 255, 255, 0.15);
+            border-radius: 14px;
+            border: 1.5px solid rgba(255, 255, 255, 0.12);
             overflow: hidden;
-            box-shadow: inset 0 2px 8px rgba(0,0,0,0.3);
+            margin-top: 6px;
         }
         
         .battery-fill {
@@ -165,9 +175,9 @@
             height: 100%;
             width: 0%;
             background: linear-gradient(90deg, #00b8a3, #00ffcc, #00ffaa);
-            border-radius: 20px;
+            border-radius: 14px;
             transition: width 0.5s ease;
-            box-shadow: 0 0 20px rgba(0, 255, 204, 0.5);
+            box-shadow: 0 0 15px rgba(0, 255, 204, 0.4);
         }
         
         .battery-segments {
@@ -182,7 +192,7 @@
         
         .segment {
             flex: 1;
-            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            border-right: 1px solid rgba(255, 255, 255, 0.08);
         }
         
         .segment:last-child {
@@ -195,9 +205,9 @@
             left: 50%;
             transform: translate(-50%, -50%);
             color: white;
-            font-weight: 700;
-            font-size: 13px;
-            text-shadow: 0 0 10px rgba(0,0,0,0.7);
+            font-weight: 600;
+            font-size: 11px;
+            text-shadow: 0 0 8px rgba(0,0,0,0.7);
             z-index: 5;
             white-space: nowrap;
         }
@@ -206,74 +216,79 @@
             position: absolute;
             top: 50%;
             transform: translateY(-50%);
-            width: 8px;
-            height: 8px;
+            width: 6px;
+            height: 6px;
             border-radius: 50%;
             background: white;
-            box-shadow: 0 0 15px currentColor;
+            box-shadow: 0 0 12px currentColor;
             z-index: 6;
             transition: left 0.5s ease;
         }
         
-        /* Measurement Data Grid - THREE COLUMNS */
         .measurement-grid {
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
-            gap: 12px;
-            margin: 16px 0;
+            gap: 8px;
+            margin: 10px 0;
         }
         
         .measurement-card {
             background: rgba(18, 42, 63, 0.6);
-            border-radius: 12px;
-            padding: 14px 8px;
+            border-radius: 10px;
+            padding: 10px 5px;
             text-align: center;
-            border: 1px solid rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.08);
         }
         
         .measurement-icon {
-            font-size: 24px;
-            margin-bottom: 6px;
+            font-size: 20px;
+            margin-bottom: 3px;
         }
         
         .measurement-label {
             color: #a0bcd8;
-            font-size: 11px;
-            margin-bottom: 6px;
+            font-size: 10px;
+            margin-bottom: 4px;
+            white-space: nowrap;
         }
         
         .measurement-value {
             color: #ffd966;
-            font-size: 20px;
+            font-size: 18px;
             font-weight: bold;
         }
         
         .measurement-unit {
             color: #8ab4d6;
-            font-size: 11px;
+            font-size: 10px;
             margin-left: 2px;
         }
         
-        /* Prediction Sections - 纵向排列 */
+        .prediction-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 10px 0;
+        }
+        
         .prediction-section {
             background: rgba(18, 42, 63, 0.4);
-            border-radius: 12px;
-            padding: 16px;
-            margin-top: 16px;
-            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 10px;
+            padding: 10px;
+            border: 1px solid rgba(255,255,255,0.06);
         }
         
         .section-header {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 5px;
             margin-bottom: 8px;
         }
         
         .section-badge {
-            padding: 2px 10px;
-            border-radius: 20px;
-            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 14px;
+            font-size: 8px;
             font-weight: bold;
         }
         
@@ -287,18 +302,12 @@
             color: white;
         }
         
-        .section-description {
-            margin: 0 0 12px 0;
-            font-size: 12px;
-            color: #8ab4d6;
-        }
-        
         .prediction-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 10px 0;
-            border-bottom: 1px solid rgba(255,255,255,0.06);
+            padding: 6px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
         }
         
         .prediction-item:last-child {
@@ -307,56 +316,63 @@
         
         .prediction-time {
             color: #a0bcd8;
-            font-size: 14px;
+            font-size: 11px;
         }
         
         .prediction-value {
             color: #ffd966;
             font-weight: 600;
-            font-size: 16px;
+            font-size: 13px;
         }
         
         .trend-indicator {
             display: inline-block;
-            margin-left: 6px;
-            font-size: 14px;
+            margin-left: 3px;
+            font-size: 11px;
         }
         
         .trend-up { color: #00ff88; }
         .trend-down { color: #ff6b6b; }
         .trend-stable { color: #ffd966; }
         
-        .confidence-badge {
-            background: rgba(255,255,255,0.1);
-            padding: 4px 8px;
-            border-radius: 16px;
-            font-size: 10px;
-            color: #8ab4d6;
-            margin-left: 6px;
+        /* 迷你分数条 */
+        .mini-score-bar {
+            flex: 1;
+            height: 6px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 3px;
+            overflow: hidden;
         }
         
-        /* Turbine Control Panel */
+        .mini-score-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #ff6b6b, #ffd966, #00ff88);
+            border-radius: 3px;
+            transition: width 0.5s ease;
+        }
+        
         .turbine-section {
-            background: linear-gradient(135deg, rgba(0, 200, 150, 0.1) 0%, rgba(0, 100, 200, 0.08) 100%);
-            border-radius: 12px;
-            padding: 18px;
-            margin-top: 16px;
-            border: 1px solid rgba(0, 255, 204, 0.3);
+            background: linear-gradient(135deg, rgba(0, 200, 150, 0.08) 0%, rgba(0, 100, 200, 0.06) 100%);
+            border-radius: 10px;
+            padding: 12px;
+            margin-top: 10px;
+            border: 1px solid rgba(0, 255, 204, 0.2);
         }
         
         .turbine-header {
             display: flex;
             align-items: center;
-            gap: 8px;
-            margin-bottom: 14px;
+            gap: 6px;
+            margin-bottom: 8px;
         }
         
         .turbine-badge {
             background: #00ffcc;
             color: #0a1428;
-            padding: 2px 10px;
-            border-radius: 20px;
-            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 14px;
+            font-size: 9px;
             font-weight: bold;
         }
         
@@ -364,44 +380,44 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 14px;
+            margin-bottom: 8px;
         }
         
         .turbine-label {
             color: #a0bcd8;
-            font-size: 13px;
+            font-size: 11px;
         }
         
         .turbine-value {
             color: #00ffcc;
             font-weight: 600;
-            font-size: 14px;
+            font-size: 12px;
         }
         
         .resistance-slider-container {
-            margin: 18px 0;
+            margin: 10px 0;
         }
         
         .slider-label-row {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 8px;
+            margin-bottom: 4px;
         }
         
         .slider-label {
             color: #a0bcd8;
-            font-size: 13px;
+            font-size: 11px;
         }
         
         .slider-value {
             color: #ffd966;
-            font-size: 15px;
+            font-size: 13px;
             font-weight: 600;
         }
         
         .resistance-slider {
             width: 100%;
-            height: 6px;
+            height: 5px;
             border-radius: 3px;
             background: linear-gradient(90deg, #00ff88, #ffd966, #ff6b6b);
             -webkit-appearance: none;
@@ -412,24 +428,24 @@
         .resistance-slider::-webkit-slider-thumb {
             -webkit-appearance: none;
             appearance: none;
-            width: 18px;
-            height: 18px;
+            width: 14px;
+            height: 14px;
             border-radius: 50%;
             background: #00ffcc;
-            box-shadow: 0 0 15px #00ffcc;
+            box-shadow: 0 0 12px #00ffcc;
             border: 2px solid white;
             cursor: pointer;
         }
         
         .efficiency-bar-container {
-            margin: 14px 0;
+            margin: 8px 0;
         }
         
         .efficiency-bar {
             width: 100%;
-            height: 8px;
+            height: 6px;
             background: rgba(0,0,0,0.3);
-            border-radius: 4px;
+            border-radius: 3px;
             overflow: hidden;
         }
         
@@ -437,14 +453,14 @@
             height: 100%;
             width: 0%;
             background: linear-gradient(90deg, #ff6b6b, #ffd966, #00ff88);
-            border-radius: 4px;
+            border-radius: 3px;
             transition: width 0.5s ease;
         }
         
         .efficiency-stats {
             display: flex;
             justify-content: space-around;
-            margin-top: 14px;
+            margin-top: 8px;
         }
         
         .efficiency-stat {
@@ -453,28 +469,28 @@
         
         .stat-label {
             color: #8ab4d6;
-            font-size: 11px;
+            font-size: 9px;
         }
         
         .stat-value {
             color: #ffd966;
-            font-size: 18px;
+            font-size: 15px;
             font-weight: 600;
         }
         
         .auto-tune-indicator {
             display: flex;
             align-items: center;
-            gap: 8px;
-            padding: 12px 14px;
-            background: rgba(0, 255, 204, 0.1);
+            gap: 6px;
+            padding: 8px 10px;
+            background: rgba(0, 255, 204, 0.08);
             border-radius: 8px;
-            margin-top: 14px;
+            margin-top: 8px;
         }
         
         .auto-tune-dot {
-            width: 10px;
-            height: 10px;
+            width: 8px;
+            height: 8px;
             border-radius: 50%;
             background: #00ff88;
             animation: pulse 1.5s infinite;
@@ -482,37 +498,26 @@
         
         .auto-tune-text {
             color: #e0f7fa;
-            font-size: 13px;
+            font-size: 11px;
         }
         
         .auto-tune-action {
             color: #00ffcc;
             font-weight: 600;
             margin-left: auto;
-            font-size: 13px;
+            font-size: 11px;
         }
         
-        /* Coordinates Footer */
-        .coordinates-footer {
-            margin-top: 16px;
-            padding-top: 14px;
-            border-top: 1px solid rgba(255,255,255,0.1);
-            color: #8ab4d6;
-            font-size: 13px;
-            text-align: right;
-        }
-        
-        /* Legend */
         #legend {
             position: absolute;
-            bottom: 30px;
+            bottom: 20px;
             left: 20px;
-            background: rgba(0, 0, 0, 0.6);
+            background: rgba(0, 0, 0, 0.5);
             color: white;
-            padding: 12px 20px;
-            border-radius: 30px;
+            padding: 10px 18px;
+            border-radius: 24px;
             backdrop-filter: blur(5px);
-            font-size: 14px;
+            font-size: 13px;
             z-index: 1000;
             pointer-events: none;
             border: 1px solid #3a5a7a;
@@ -520,39 +525,28 @@
         
         .legend-dot {
             display: inline-block;
-            width: 12px;
-            height: 12px;
+            width: 10px;
+            height: 10px;
             border-radius: 50%;
-            margin-right: 6px;
-            box-shadow: 0 0 15px currentColor;
+            margin-right: 5px;
+            box-shadow: 0 0 12px currentColor;
         }
         
-        /* Title Label */
         #titleLabel {
             position: absolute;
             top: 20px;
             left: 20px;
             color: white;
-            font-size: 24px;
+            font-size: 22px;
             font-weight: bold;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
             z-index: 1000;
             pointer-events: none;
             background: rgba(0, 0, 0, 0.3);
-            padding: 8px 20px;
+            padding: 6px 18px;
             border-radius: 30px;
             backdrop-filter: blur(5px);
             border: 1px solid rgba(255,255,255,0.2);
-        }
-        
-        .live-indicator {
-            display: inline-block;
-            width: 8px;
-            height: 8px;
-            background: #00ff88;
-            border-radius: 50%;
-            margin-right: 6px;
-            animation: pulse 2s infinite;
         }
         
         @keyframes pulse {
@@ -569,137 +563,139 @@
         <span class="close-btn" onclick="hideInfoPanel()">&times;</span>
         
         <div class="station-header">
-            <h2 id="stationName">Station Name</h2>
-            <div class="station-subtitle" id="stationDesc">Pacific Coastal Sensor Station</div>
+            <div class="station-info">
+                <h2 id="stationName">Station Name</h2>
+                <div class="station-subtitle" id="stationDesc">Pacific Coastal Sensor Station</div>
+            </div>
+            <div class="coordinates-inline">
+                📍 <span id="coordinates">34.30°N, 120.82°W</span>
+            </div>
         </div>
         
-        <!-- Date and Time -->
-        <div class="datetime-section">
-            <div class="datetime-row">
+        <div class="info-bar">
+            <div class="datetime-compact">
+                <span class="live-indicator"></span>
                 <span class="date-display" id="currentDate">2024-01-15</span>
-                <span style="display: flex; align-items: center;">
-                    <span class="live-indicator"></span>
-                    <span class="time-display" id="currentTime">14:30:45</span>
-                </span>
+                <span class="time-display" id="currentTime">14:30:45</span>
+            </div>
+            <div class="status-compact">
+                <span class="status-badge" id="statusText">Harvest Priority</span>
             </div>
         </div>
         
-        <!-- Status Battery -->
-        <div class="status-section">
-            <div class="status-label-row">
-                <span class="status-title">⚡ Buoy Status</span>
-                <span class="status-value" id="statusText">Harvest Priority</span>
+        <div class="battery-container">
+            <div class="battery-fill" id="batteryFill"></div>
+            <div class="battery-segments">
+                <div class="segment"></div>
+                <div class="segment"></div>
+                <div class="segment"></div>
             </div>
-            <div class="battery-container">
-                <div class="battery-fill" id="batteryFill"></div>
-                <div class="battery-segments">
-                    <div class="segment"></div>
-                    <div class="segment"></div>
-                    <div class="segment"></div>
-                </div>
-                <div class="battery-indicator" id="batteryIndicator"></div>
-                <div class="battery-text" id="batteryStatusLabel">Harvest Priority</div>
-            </div>
+            <div class="battery-indicator" id="batteryIndicator"></div>
+            <div class="battery-text" id="batteryStatusLabel">Harvest Priority</div>
         </div>
         
-        <!-- Three Sensors -->
         <h3>📊 Real-time Telemetry</h3>
         <div class="measurement-grid">
             <div class="measurement-card">
                 <div class="measurement-icon">🌡️</div>
                 <div class="measurement-label">Temperature</div>
                 <div>
-                    <span class="measurement-value" id="waterTemp">16.5</span>
+                    <span class="measurement-value" id="temperature">16.5</span>
                     <span class="measurement-unit">°C</span>
                 </div>
             </div>
             <div class="measurement-card">
                 <div class="measurement-icon">🌊</div>
-                <div class="measurement-label">Current</div>
+                <div class="measurement-label">Current Speed</div>
                 <div>
-                    <span class="measurement-value" id="currentSpeed">2.8</span>
+                    <span class="measurement-value" id="speed">2.8</span>
                     <span class="measurement-unit">m/s</span>
                 </div>
             </div>
             <div class="measurement-card">
                 <div class="measurement-icon">📈</div>
-                <div class="measurement-label">Wave H</div>
+                <div class="measurement-label">Wave Height</div>
                 <div>
-                    <span class="measurement-value" id="waveHeight">3.2</span>
+                    <span class="measurement-value" id="depth">3.2</span>
                     <span class="measurement-unit">m</span>
                 </div>
             </div>
         </div>
         
-        <!-- ===== 本地即时预测（秒级）- 已删除120s ===== -->
-        <div class="prediction-section">
-            <div class="section-header">
-                <span>📡 Local Nowcast</span>
-                <span class="section-badge badge-local">Buoy Telemetry</span>
+        <div class="prediction-row">
+            <!-- Local Nowcast - 无百分比，无描述 -->
+            <div class="prediction-section">
+                <div class="section-header">
+                    <span>📡 Local Nowcast</span>
+                    <span class="section-badge badge-local">Buoy</span>
+                </div>
+                
+                <div class="prediction-item">
+                    <span class="prediction-time">30s</span>
+                    <span>
+                        <span class="prediction-value" id="local30s">2.8 MW</span>
+                        <span class="trend-indicator" id="trend30s">↗</span>
+                    </span>
+                </div>
+                <div class="prediction-item">
+                    <span class="prediction-time">60s</span>
+                    <span>
+                        <span class="prediction-value" id="local60s">3.1 MW</span>
+                        <span class="trend-indicator" id="trend60s">↗</span>
+                    </span>
+                </div>
+                <div class="prediction-item">
+                    <span class="prediction-time">90s</span>
+                    <span>
+                        <span class="prediction-value" id="local90s">2.5 MW</span>
+                        <span class="trend-indicator" id="trend90s">↘</span>
+                    </span>
+                </div>
             </div>
-            <p class="section-description">Wave arrival prediction (300m upstream)</p>
             
-            <div class="prediction-item">
-                <span class="prediction-time">30 seconds</span>
-                <span>
-                    <span class="prediction-value" id="local30s">2.8 MW</span>
-                    <span class="trend-indicator" id="trend30s">↗</span>
-                    <span class="confidence-badge" id="conf30s">95%</span>
-                </span>
-            </div>
-            <div class="prediction-item">
-                <span class="prediction-time">60 seconds</span>
-                <span>
-                    <span class="prediction-value" id="local60s">3.1 MW</span>
-                    <span class="trend-indicator" id="trend60s">↗</span>
-                    <span class="confidence-badge" id="conf60s">92%</span>
-                </span>
-            </div>
-            <div class="prediction-item">
-                <span class="prediction-time">90 seconds</span>
-                <span>
-                    <span class="prediction-value" id="local90s">2.5 MW</span>
-                    <span class="trend-indicator" id="trend90s">↘</span>
-                    <span class="confidence-badge" id="conf90s">88%</span>
-                </span>
+            <!-- AI Power Score - 对接队友数据 -->
+            <div class="prediction-section">
+                <div class="section-header">
+                    <span>🤖 AI Power Score</span>
+                    <span class="section-badge badge-ai">ML</span>
+                </div>
+                
+                <div class="prediction-item">
+                    <span class="prediction-time">1 hour</span>
+                    <span style="display: flex; align-items: center; gap: 8px;">
+                        <div class="mini-score-bar">
+                            <div class="mini-score-fill" id="score1hFill" style="width: 78%;"></div>
+                        </div>
+                        <span style="color: #ffd966; font-weight: 600; min-width: 45px; text-align: right;">
+                            <span id="score1h">78</span>/100
+                        </span>
+                    </span>
+                </div>
+                <div class="prediction-item">
+                    <span class="prediction-time">2 hours</span>
+                    <span style="display: flex; align-items: center; gap: 8px;">
+                        <div class="mini-score-bar">
+                            <div class="mini-score-fill" id="score2hFill" style="width: 65%;"></div>
+                        </div>
+                        <span style="color: #ffd966; font-weight: 600; min-width: 45px; text-align: right;">
+                            <span id="score2h">65</span>/100
+                        </span>
+                    </span>
+                </div>
+                <div class="prediction-item">
+                    <span class="prediction-time">3 hours</span>
+                    <span style="display: flex; align-items: center; gap: 8px;">
+                        <div class="mini-score-bar">
+                            <div class="mini-score-fill" id="score3hFill" style="width: 52%;"></div>
+                        </div>
+                        <span style="color: #ffd966; font-weight: 600; min-width: 45px; text-align: right;">
+                            <span id="score3h">52</span>/100
+                        </span>
+                    </span>
+                </div>
             </div>
         </div>
         
-        <!-- ===== AI 趋势预测（小时级） ===== -->
-        <div class="prediction-section">
-            <div class="section-header">
-                <span>🤖 AI Trend Forecast</span>
-                <span class="section-badge badge-ai">LSTM Model</span>
-            </div>
-            <p class="section-description">Regional wave energy forecast</p>
-            
-            <div class="prediction-item">
-                <span class="prediction-time">1 hour</span>
-                <span>
-                    <span class="prediction-value" id="ai1h">2.5 MW</span>
-                    <span class="trend-indicator" id="trend1h">→</span>
-                    <span class="confidence-badge" id="conf1h">78%</span>
-                </span>
-            </div>
-            <div class="prediction-item">
-                <span class="prediction-time">2 hours</span>
-                <span>
-                    <span class="prediction-value" id="ai2h">3.2 MW</span>
-                    <span class="trend-indicator" id="trend2h">↗</span>
-                    <span class="confidence-badge" id="conf2h">65%</span>
-                </span>
-            </div>
-            <div class="prediction-item">
-                <span class="prediction-time">3 hours</span>
-                <span>
-                    <span class="prediction-value" id="ai3h">2.8 MW</span>
-                    <span class="trend-indicator" id="trend3h">↘</span>
-                    <span class="confidence-badge" id="conf3h">52%</span>
-                </span>
-            </div>
-        </div>
-        
-        <!-- 涡轮机智能控制面板 -->
         <div class="turbine-section">
             <div class="turbine-header">
                 <span>🎛️ Turbine Control</span>
@@ -707,8 +703,8 @@
             </div>
             
             <div class="turbine-status-row">
-                <span class="turbine-label">Current Mode</span>
-                <span class="turbine-value" id="turbineMode">Predictive Feed-Forward</span>
+                <span class="turbine-label">Mode</span>
+                <span class="turbine-value" id="strategy">Predictive Feed-Forward</span>
             </div>
             
             <div class="resistance-slider-container">
@@ -721,7 +717,7 @@
             
             <div class="efficiency-bar-container">
                 <div class="slider-label-row">
-                    <span class="slider-label">Energy Capture Efficiency</span>
+                    <span class="slider-label">Efficiency</span>
                     <span class="slider-value" id="efficiencyValue">89%</span>
                 </div>
                 <div class="efficiency-bar">
@@ -731,34 +727,29 @@
             
             <div class="efficiency-stats">
                 <div class="efficiency-stat">
-                    <div class="stat-label">Current Output</div>
+                    <div class="stat-label">Current</div>
                     <div class="stat-value" id="currentOutput">2.4 MW</div>
                 </div>
                 <div class="efficiency-stat">
-                    <div class="stat-label">Optimal Output</div>
+                    <div class="stat-label">Optimal</div>
                     <div class="stat-value" id="optimalOutput">2.8 MW</div>
                 </div>
                 <div class="efficiency-stat">
-                    <div class="stat-label">Efficiency Gain</div>
+                    <div class="stat-label">Gain</div>
                     <div class="stat-value" style="color: #00ff88;" id="efficiencyGain">+18%</div>
                 </div>
             </div>
             
             <div class="auto-tune-indicator">
                 <span class="auto-tune-dot"></span>
-                <span class="auto-tune-text">Auto-tuning active</span>
-                <span class="auto-tune-action" id="tuningAction">Increasing resistance →</span>
+                <span class="auto-tune-text">Auto-tuning</span>
+                <span class="auto-tune-action" id="tuningAction">Increasing →</span>
             </div>
-        </div>
-        
-        <!-- Coordinates -->
-        <div class="coordinates-footer">
-            📍 <span id="coordinates">34.30°N, 120.82°W</span>
         </div>
     </div>
 
     <div id="legend">
-        <span><span class="legend-dot" style="background: #00ffcc;"></span>Intelligent Buoy Station (Click for full telemetry)</span>
+        <span><span class="legend-dot" style="background: #00ffcc;"></span>Intelligent Buoy Station (Click for telemetry)</span>
     </div>
 
     <script>
@@ -778,9 +769,6 @@
             destination: Cesium.Cartesian3.fromDegrees(-120.815728, 34.303973, 2500000)
         });
 
-        // ============================================================
-        // 状态定义
-        // ============================================================
         const STATUS_LEVELS = {
             'Sleep': { level: 0, color: '#666666', label: 'Sleep' },
             'Standby': { level: 1, color: '#ffaa00', label: 'Standby' },
@@ -789,40 +777,14 @@
             'Max Harvest': { level: 4, color: '#00ffcc', label: 'Max Harvest' }
         };
 
-        // ============================================================
-        // 站点数据
-        // ============================================================
         const tideSites = [
-            {
-                id: 'site1', name: 'Central California Buoy', desc: 'Pacific Coastal Telemetry',
-                lat: 34.303973, lng: -120.815728, color: Cesium.Color.CYAN,
-                data: { waterTemp: 16.5, currentSpeed: 2.8, waveHeight: 3.2, status: 'Harvest Priority' }
-            },
-            {
-                id: 'site2', name: 'Oregon Coastal Buoy', desc: 'Pacific Northwest Telemetry',
-                lat: 45.638728, lng: -123.958632, color: Cesium.Color.ORANGERED,
-                data: { waterTemp: 12.3, currentSpeed: 3.5, waveHeight: 4.1, status: 'Max Harvest' }
-            },
-            {
-                id: 'site3', name: 'Oslo Fjord Buoy', desc: 'Norwegian Research Station',
-                lat: 59.913869, lng: 10.752245, color: Cesium.Color.GOLD,
-                data: { waterTemp: 8.2, currentSpeed: 2.1, waveHeight: 2.5, status: 'Sense Only' }
-            },
-            {
-                id: 'site4', name: 'Bay of Fundy Buoy', desc: 'World\'s Highest Tides',
-                lat: 45.2589, lng: -64.1903, color: Cesium.Color.MAGENTA,
-                data: { waterTemp: 10.8, currentSpeed: 5.2, waveHeight: 8.5, status: 'Max Harvest' }
-            },
-            {
-                id: 'site5', name: 'East China Sea Buoy', desc: 'Offshore Tidal Farm',
-                lat: 28.3712, lng: 122.0587, color: Cesium.Color.LIME,
-                data: { waterTemp: 22.5, currentSpeed: 1.9, waveHeight: 2.8, status: 'Standby' }
-            }
+            { id: 'site1', name: 'Central California Buoy', desc: 'Pacific Coastal Telemetry', lat: 34.303973, lng: -120.815728, color: Cesium.Color.CYAN },
+            { id: 'site2', name: 'Oregon Coastal Buoy', desc: 'Pacific Northwest Telemetry', lat: 45.638728, lng: -123.958632, color: Cesium.Color.ORANGERED },
+            { id: 'site3', name: 'Oslo Fjord Buoy', desc: 'Norwegian Research Station', lat: 59.913869, lng: 10.752245, color: Cesium.Color.GOLD },
+            { id: 'site4', name: 'Bay of Fundy Buoy', desc: 'World\'s Highest Tides', lat: 45.2589, lng: -64.1903, color: Cesium.Color.MAGENTA },
+            { id: 'site5', name: 'East China Sea Buoy', desc: 'Offshore Tidal Farm', lat: 28.3712, lng: 122.0587, color: Cesium.Color.LIME }
         ];
 
-        // ============================================================
-        // 电池条更新
-        // ============================================================
         function updateBatteryStatus(status) {
             const statusConfig = STATUS_LEVELS[status] || STATUS_LEVELS['Standby'];
             const level = statusConfig.level;
@@ -833,7 +795,7 @@
             batteryFill.style.background = `linear-gradient(90deg, ${statusConfig.color}80, ${statusConfig.color})`;
             
             const indicator = document.getElementById('batteryIndicator');
-            indicator.style.left = `calc(${fillPercent}% - 4px)`;
+            indicator.style.left = `calc(${fillPercent}% - 3px)`;
             indicator.style.backgroundColor = statusConfig.color;
             indicator.style.boxShadow = `0 0 15px ${statusConfig.color}`;
             
@@ -845,65 +807,36 @@
             batteryText.style.textShadow = level >= 3 ? '0 0 10px rgba(0,255,204,0.5)' : '0 0 10px rgba(0,0,0,0.7)';
         }
 
-        // ============================================================
         // 创建 Cesium 实体
-        // ============================================================
         tideSites.forEach(site => {
             viewer.entities.add({
                 id: `${site.id}-pillar`,
                 position: Cesium.Cartesian3.fromDegrees(site.lng, site.lat),
                 polyline: {
-                    positions: [
-                        Cesium.Cartesian3.fromDegrees(site.lng, site.lat, 0),
-                        Cesium.Cartesian3.fromDegrees(site.lng, site.lat, 150000)
-                    ],
+                    positions: [Cesium.Cartesian3.fromDegrees(site.lng, site.lat, 0), Cesium.Cartesian3.fromDegrees(site.lng, site.lat, 150000)],
                     width: 2,
-                    material: new Cesium.PolylineGlowMaterialProperty({
-                        glowPower: 0.2, color: site.color.withAlpha(0.6)
-                    })
+                    material: new Cesium.PolylineGlowMaterialProperty({ glowPower: 0.2, color: site.color.withAlpha(0.6) })
                 }
             });
 
             viewer.entities.add({
                 id: site.id, name: site.name, description: site.desc,
                 position: Cesium.Cartesian3.fromDegrees(site.lng, site.lat, 0),
-                point: {
-                    pixelSize: 18, color: site.color, outlineColor: Cesium.Color.WHITE,
-                    outlineWidth: 2, heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
-                    disableDepthTestDistance: Number.POSITIVE_INFINITY
-                },
-                label: {
-                    text: site.name, font: '14px sans-serif',
-                    fillColor: Cesium.Color.WHITE, outlineColor: Cesium.Color.BLACK,
-                    outlineWidth: 2, style: Cesium.LabelStyle.FILL_AND_OUTLINE,
-                    verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
-                    pixelOffset: new Cesium.Cartesian2(0, -30),
-                    distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 5000000)
-                },
-                properties: new Cesium.PropertyBag({
-                    waterTemp: site.data.waterTemp, currentSpeed: site.data.currentSpeed,
-                    waveHeight: site.data.waveHeight, status: site.data.status,
-                    lat: site.lat, lng: site.lng
-                })
+                point: { pixelSize: 18, color: site.color, outlineColor: Cesium.Color.WHITE, outlineWidth: 2, heightReference: Cesium.HeightReference.CLAMP_TO_GROUND, disableDepthTestDistance: Number.POSITIVE_INFINITY },
+                label: { text: site.name, font: '14px sans-serif', fillColor: Cesium.Color.WHITE, outlineColor: Cesium.Color.BLACK, outlineWidth: 2, style: Cesium.LabelStyle.FILL_AND_OUTLINE, verticalOrigin: Cesium.VerticalOrigin.BOTTOM, pixelOffset: new Cesium.Cartesian2(0, -30), distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 5000000) }
             });
         });
 
-        // ============================================================
         // 时间更新
-        // ============================================================
         function updateDateTime() {
             const now = new Date();
-            document.getElementById('currentDate').textContent = 
-                `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
-            document.getElementById('currentTime').textContent = 
-                `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
+            document.getElementById('currentDate').textContent = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+            document.getElementById('currentTime').textContent = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
         }
         updateDateTime();
         setInterval(updateDateTime, 1000);
 
-        // ============================================================
-        // 本地即时预测（基于物理模型）- 只返回3个时间点
-        // ============================================================
+        // 本地预测
         function generateLocalPredictions(currentSpeed, waveHeight) {
             const basePower = currentSpeed * currentSpeed * waveHeight * 0.35;
             const wavePeriod = 8 + waveHeight * 0.5;
@@ -915,34 +848,12 @@
                 const distanceCovered = waveSpeed * sec;
                 const arrivalFactor = Math.min(1, distanceCovered / buoyDistance);
                 const powerAtTime = basePower * (0.7 + 0.3 * arrivalFactor);
-                const confidence = Math.round(95 - sec * 0.08);
                 const trend = arrivalFactor > 0.5 ? 'up' : 'down';
-                
-                return {
-                    time: sec,
-                    value: powerAtTime.toFixed(1),
-                    confidence: confidence,
-                    trend: trend
-                };
+                return { value: powerAtTime.toFixed(1), trend: trend };
             });
         }
 
-        // ============================================================
-        // AI 趋势预测（模拟你队友的 LSTM 模型）
-        // ============================================================
-        function generateAIPredictions(currentSpeed, waveHeight) {
-            const basePower = currentSpeed * currentSpeed * waveHeight * 0.35;
-            
-            return {
-                h1: { value: (basePower * 0.9).toFixed(1), trend: 'stable', confidence: 78 },
-                h2: { value: (basePower * 1.15).toFixed(1), trend: 'up', confidence: 65 },
-                h3: { value: (basePower * 1.0).toFixed(1), trend: 'down', confidence: 52 }
-            };
-        }
-
-        // ============================================================
-        // 涡轮机智能控制逻辑
-        // ============================================================
+        // 涡轮机控制
         function updateTurbineControl(currentSpeed, waveHeight, status) {
             const basePower = currentSpeed * currentSpeed * waveHeight * 0.35;
             
@@ -967,56 +878,81 @@
             document.getElementById('optimalOutput').textContent = optimalOutput.toFixed(1) + ' MW';
             document.getElementById('efficiencyGain').textContent = '+' + efficiencyGain + '%';
             
-            const actionText = optimalResistance > 60 ? 'Increasing resistance →' : 
-                              optimalResistance < 40 ? '← Decreasing resistance' : 
-                              '→ Holding steady ←';
+            const actionText = optimalResistance > 60 ? 'Increasing →' : (optimalResistance < 40 ? '← Decreasing' : '→ Holding ←');
             document.getElementById('tuningAction').textContent = actionText;
         }
 
-        // ============================================================
-        // Live Data Polling (BluePulse Integration)
-        // ============================================================
-        async function fetchLiveData() {
-            try {
-                const response = await fetch('data');
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                
-                const data = await response.json();
-                console.log("BluePulse Data Received:", data);
-                
-                // Update the UI if the info panel is visible
-                const panel = document.getElementById('tideInfoPanel');
-                if (panel && panel.style.display === 'block') {
-                    // 1. Raw Sensors
-                    document.getElementById('waterTemp').textContent = data.temperature.toFixed(1);
-                    document.getElementById('currentSpeed').textContent = data.speed.toFixed(2);
-                    document.getElementById('waveHeight').textContent = data.depth.toFixed(1);
-                    
-                    // 2. ML Prediction (Marine Mode)
-                    // We'll use the first AI slot to show the real ML result
-                    document.getElementById('ai1h').textContent = data.prediction;
-                    document.getElementById('conf1h').textContent = (data.probability * 100).toFixed(0) + '%';
-                    updateTrendIndicator('trend1h', data.probability > 0.8 ? 'stable' : 'up');
+        // 更新趋势箭头
+        function updateTrendIndicator(elementId, trend) {
+            const element = document.getElementById(elementId);
+            element.className = 'trend-indicator';
+            if (trend === 'up') { element.classList.add('trend-up'); element.textContent = '↗'; }
+            else if (trend === 'down') { element.classList.add('trend-down'); element.textContent = '↘'; }
+            else { element.classList.add('trend-stable'); element.textContent = '→'; }
+        }
 
-                    // 3. Dynamic Turbine Control based on real data
-                    updateTurbineControl(data.speed, data.depth, data.prediction.includes('Storm') ? 'Max Harvest' : 'Harvest Priority');
-                    
-                    // 4. Status Bar (Battery/Energy Mode)
-                    const statusMapping = {
-                        'Calm': 'Sense Only',
-                        'Moderate': 'Harvest Priority',
-                        'Rough': 'Max Harvest',
-                        'Stormy': 'Max Harvest'
-                    };
-                    updateBatteryStatus(statusMapping[data.prediction] || 'Sense Only');
-                }
+        // ============================================================
+        // 数据刷新 - 对接队友的变量名
+        // ============================================================
+        async function refreshDashboard() {
+            try {
+                const res = await fetch('/data');
+                const data = await res.json();
+                
+                // 更新 AI Power Score (队友的变量)
+                const score1h = data.power_score_1h || 0;
+                const score2h = data.power_score_2h || 0;
+                const score3h = data.power_score_3h || 0;
+                
+                document.getElementById('score1h').textContent = score1h;
+                document.getElementById('score2h').textContent = score2h;
+                document.getElementById('score3h').textContent = score3h;
+                
+                document.getElementById('score1hFill').style.width = score1h + '%';
+                document.getElementById('score2hFill').style.width = score2h + '%';
+                document.getElementById('score3hFill').style.width = score3h + '%';
+                
+                // 更新策略
+                document.getElementById('strategy').textContent = data.strategy || 'Predictive Feed-Forward';
+                
+                // 更新传感器数据
+                const temp = data.temperature || 0;
+                const depth = data.depth || 0;
+                const speed = data.speed || 0;
+                
+                document.getElementById('temperature').textContent = temp.toFixed(1);
+                document.getElementById('depth').textContent = depth.toFixed(1);
+                document.getElementById('speed').textContent = speed.toFixed(2);
+                
+                // 根据分数更新状态
+                const avgScore = (score1h + score2h + score3h) / 3;
+                let status = 'Sense Only';
+                if (avgScore >= 70) status = 'Max Harvest';
+                else if (avgScore >= 50) status = 'Harvest Priority';
+                else if (avgScore >= 30) status = 'Sense Only';
+                else status = 'Standby';
+                
+                updateBatteryStatus(status);
+                updateTurbineControl(speed, depth, status);
+                
+                // 更新本地预测
+                const localPreds = generateLocalPredictions(speed, depth);
+                document.getElementById('local30s').textContent = localPreds[0].value + ' MW';
+                document.getElementById('local60s').textContent = localPreds[1].value + ' MW';
+                document.getElementById('local90s').textContent = localPreds[2].value + ' MW';
+                updateTrendIndicator('trend30s', localPreds[0].trend);
+                updateTrendIndicator('trend60s', localPreds[1].trend);
+                updateTrendIndicator('trend90s', localPreds[2].trend);
+                
+                console.log('Dashboard refreshed:', data);
             } catch (error) {
-                console.error('Error fetching live data:', error);
+                console.error('Error fetching data:', error);
             }
         }
-        
-        // Poll every 500ms for high-precision updates
-        setInterval(fetchLiveData, 500);
+
+        // 每500ms刷新一次
+        setInterval(refreshDashboard, 500);
+        refreshDashboard(); // 立即执行一次
 
         // ============================================================
         // 点击交互
@@ -1029,31 +965,20 @@
             if (Cesium.defined(pickedObject) && Cesium.defined(pickedObject.id)) {
                 const entity = pickedObject.id;
                 
-                // Update panel static content
                 document.getElementById('stationName').textContent = entity.name || "BluePulse Node";
                 document.getElementById('stationDesc').textContent = entity.description || "Real-time Marine Intelligence";
                 
-                // Coordinates
                 if (entity.position) {
                     const cartographic = Cesium.Ellipsoid.WGS84.cartesianToCartographic(entity.position.getValue(Cesium.JulianDate.now()));
                     const lat = Cesium.Math.toDegrees(cartographic.latitude);
                     const lng = Cesium.Math.toDegrees(cartographic.longitude);
-                    document.getElementById('coordinates').textContent = 
-                        `${Math.abs(lat).toFixed(2)}°${lat >= 0 ? 'N' : 'S'}, ${Math.abs(lng).toFixed(2)}°${lng >= 0 ? 'E' : 'W'}`;
+                    document.getElementById('coordinates').textContent = `${Math.abs(lat).toFixed(2)}°${lat >= 0 ? 'N' : 'S'}, ${Math.abs(lng).toFixed(2)}°${lng >= 0 ? 'E' : 'W'}`;
                 }
                 
-                // Show the panel - polling will now fill it with live data
                 document.getElementById('tideInfoPanel').style.display = 'block';
+                refreshDashboard(); // 打开面板时刷新数据
             }
         }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
-
-        function updateTrendIndicator(elementId, trend) {
-            const element = document.getElementById(elementId);
-            element.className = 'trend-indicator';
-            if (trend === 'up') { element.classList.add('trend-up'); element.textContent = '↗'; }
-            else if (trend === 'down') { element.classList.add('trend-down'); element.textContent = '↘'; }
-            else { element.classList.add('trend-stable'); element.textContent = '→'; }
-        }
 
         window.hideInfoPanel = function() {
             document.getElementById('tideInfoPanel').style.display = 'none';
