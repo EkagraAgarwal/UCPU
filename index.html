@@ -17,12 +17,17 @@
             font-family: 'Segoe UI', Arial, sans-serif;
         }
         
+        /* Hide ONLY the selection indicator SVG line */
+        .cesium-selection-wrapper svg {
+            display: none !important;
+        }
+        
         /* Custom Info Panel - Overlay on the globe */
         #tideInfoPanel {
             position: absolute;
             top: 20px;
             right: 20px;
-            width: 400px;
+            width: 420px;
             max-height: 90vh;
             overflow-y: auto;
             background: rgba(10, 20, 40, 0.9);
@@ -66,21 +71,14 @@
             border-bottom: 1px solid rgba(0, 255, 204, 0.3);
         }
         
-        #tideInfoPanel p {
-            margin: 8px 0;
-            line-height: 1.6;
-            font-size: 14px;
+        .station-header {
+            margin-bottom: 8px;
         }
         
         .station-subtitle {
             color: #8ab4d6;
             font-size: 13px;
-            margin-bottom: 16px;
-        }
-        
-        .data-highlight {
-            color: #ffd966;
-            font-weight: bold;
+            margin-bottom: 4px;
         }
         
         .close-btn {
@@ -93,6 +91,7 @@
             cursor: pointer;
             pointer-events: auto;
             transition: color 0.2s;
+            z-index: 10;
         }
         
         .close-btn:hover {
@@ -104,7 +103,7 @@
             background: rgba(0, 255, 204, 0.1);
             border-radius: 12px;
             padding: 12px 16px;
-            margin-bottom: 16px;
+            margin: 16px 0;
             border: 1px solid rgba(0, 255, 204, 0.2);
         }
         
@@ -127,43 +126,43 @@
             text-shadow: 0 0 8px rgba(0,255,204,0.5);
         }
         
-        /* Measurement Data Grid */
+        /* Measurement Data Grid - THREE COLUMNS */
         .measurement-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
             margin: 16px 0;
         }
         
         .measurement-card {
             background: rgba(18, 42, 63, 0.6);
             border-radius: 12px;
-            padding: 16px;
+            padding: 14px 8px;
             text-align: center;
             border: 1px solid rgba(255,255,255,0.1);
         }
         
         .measurement-icon {
-            font-size: 28px;
-            margin-bottom: 8px;
+            font-size: 24px;
+            margin-bottom: 6px;
         }
         
         .measurement-label {
             color: #a0bcd8;
-            font-size: 13px;
+            font-size: 11px;
             margin-bottom: 6px;
         }
         
         .measurement-value {
             color: #ffd966;
-            font-size: 24px;
+            font-size: 20px;
             font-weight: bold;
         }
         
         .measurement-unit {
             color: #8ab4d6;
-            font-size: 12px;
-            margin-left: 4px;
+            font-size: 11px;
+            margin-left: 2px;
         }
         
         /* AI Prediction Section */
@@ -226,20 +225,21 @@
         
         .confidence-badge {
             background: rgba(255,255,255,0.1);
-            padding: 4px 10px;
+            padding: 4px 8px;
             border-radius: 20px;
-            font-size: 11px;
+            font-size: 10px;
             color: #8ab4d6;
-            margin-left: 8px;
+            margin-left: 6px;
         }
         
-        /* Coordinates Display */
-        .coordinates-section {
+        /* Coordinates Footer */
+        .coordinates-footer {
             margin-top: 16px;
             padding-top: 12px;
             border-top: 1px solid rgba(255,255,255,0.1);
-            font-size: 13px;
             color: #8ab4d6;
+            font-size: 13px;
+            text-align: right;
         }
         
         /* Legend */
@@ -313,8 +313,10 @@
     <div id="tideInfoPanel">
         <span class="close-btn" onclick="hideInfoPanel()">&times;</span>
         
-        <h2 id="stationName">Station Name</h2>
-        <div class="station-subtitle" id="stationDesc">Pacific Coastal Sensor Station</div>
+        <div class="station-header">
+            <h2 id="stationName">Station Name</h2>
+            <div class="station-subtitle" id="stationDesc">Pacific Coastal Sensor Station</div>
+        </div>
         
         <!-- Date and Time Section -->
         <div class="datetime-section">
@@ -327,23 +329,34 @@
             </div>
         </div>
         
-        <!-- Measurement Data Section -->
-        <h3>📊 Real-time Measurements</h3>
+        <!-- Measurement Data Section - THREE SENSORS -->
+        <h3>📊 Real-time Telemetry Data</h3>
         <div class="measurement-grid">
+            <!-- Water Temperature -->
             <div class="measurement-card">
-                <div class="measurement-icon">🌡</div>
-                <div class="measurement-label">Water Temperature</div>
+                <div class="measurement-icon">🌡️</div>
+                <div class="measurement-label">Temperature</div>
                 <div>
                     <span class="measurement-value" id="waterTemp">16.5</span>
                     <span class="measurement-unit">°C</span>
                 </div>
             </div>
+            <!-- Current Speed -->
             <div class="measurement-card">
                 <div class="measurement-icon">🌊</div>
                 <div class="measurement-label">Current Speed</div>
                 <div>
                     <span class="measurement-value" id="currentSpeed">2.8</span>
                     <span class="measurement-unit">m/s</span>
+                </div>
+            </div>
+            <!-- Wave Height -->
+            <div class="measurement-card">
+                <div class="measurement-icon">📏</div>
+                <div class="measurement-label">Wave Height</div>
+                <div>
+                    <span class="measurement-value" id="waterLevel">3.2</span>
+                    <span class="measurement-unit">m</span>
                 </div>
             </div>
         </div>
@@ -355,7 +368,7 @@
                 <span class="ai-badge">LSTM Model</span>
             </div>
             <p style="margin: 0 0 12px 0; font-size: 13px; color: #a0bcd8;">
-                Predicted tidal energy output based on current conditions
+                Predicted power output based on wave energy profile
             </p>
             
             <div class="prediction-item">
@@ -395,15 +408,15 @@
             </div>
         </div>
         
-        <!-- Coordinates -->
-        <div class="coordinates-section">
-            📍 Coordinates: <span class="data-highlight" id="coordinates">34.30°N, 120.82°W</span>
+        <!-- Coordinates Footer -->
+        <div class="coordinates-footer">
+            📍 <span id="coordinates">34.30°N, 120.82°W</span>
         </div>
     </div>
 
     <!-- Legend -->
     <div id="legend">
-        <span><span class="legend-dot" style="background: #00ffcc;"></span>Tidal Energy Station (Click for details)</span>
+        <span><span class="legend-dot" style="background: #00ffcc;"></span>Telemetry Buoy Station (Click for data)</span>
     </div>
 
     <script>
@@ -421,79 +434,85 @@
             timeline: false,
             fullscreenButton: false,
             infoBox: false,
-            selectionIndicator: false
+            selectionIndicator: true
         });
 
         viewer.camera.setView({
             destination: Cesium.Cartesian3.fromDegrees(-120.815728, 34.303973, 2500000)
         });
 
-        // ** Step 3: Tidal Energy Site Data (only water temp and current speed) **
+        // ** Step 3: Telemetry Buoy Site Data (Three Sensors) **
         const tideSites = [
             {
                 id: 'site1',
-                name: 'Central California Coast',
-                desc: 'Pacific Coastal Sensor Station',
+                name: 'Central California Buoy',
+                desc: 'Pacific Coastal Telemetry Station',
                 lat: 34.303973,
                 lng: -120.815728,
                 color: Cesium.Color.CYAN,
                 data: {
                     waterTemp: 16.5,
-                    currentSpeed: 2.8
+                    currentSpeed: 2.8,
+                    waterLevel: 3.2
                 }
             },
             {
                 id: 'site2',
-                name: 'Oregon Coastal Station',
-                desc: 'Pacific Northwest Tidal Zone',
+                name: 'Oregon Coastal Buoy',
+                desc: 'Pacific Northwest Telemetry',
                 lat: 45.638728,
                 lng: -123.958632,
                 color: Cesium.Color.ORANGERED,
                 data: {
                     waterTemp: 12.3,
-                    currentSpeed: 3.5
+                    currentSpeed: 3.5,
+                    waterLevel: 4.1
                 }
             },
             {
                 id: 'site3',
-                name: 'Oslo Fjord Station',
-                desc: 'Norwegian Tidal Research Center',
+                name: 'Oslo Fjord Buoy',
+                desc: 'Norwegian Research Station',
                 lat: 59.913869,
                 lng: 10.752245,
                 color: Cesium.Color.GOLD,
                 data: {
                     waterTemp: 8.2,
-                    currentSpeed: 2.1
+                    currentSpeed: 2.1,
+                    waterLevel: 2.5
                 }
             },
             {
                 id: 'site4',
-                name: 'Bay of Fundy Station',
-                desc: 'Highest Tides in the World',
+                name: 'Bay of Fundy Buoy',
+                desc: 'World\'s Highest Tides',
                 lat: 45.2589,
                 lng: -64.1903,
                 color: Cesium.Color.MAGENTA,
                 data: {
                     waterTemp: 10.8,
-                    currentSpeed: 5.2
+                    currentSpeed: 5.2,
+                    waterLevel: 8.5
                 }
             },
             {
                 id: 'site5',
-                name: 'East China Sea Station',
+                name: 'East China Sea Buoy',
                 desc: 'Offshore Tidal Farm',
                 lat: 28.3712,
                 lng: 122.0587,
                 color: Cesium.Color.LIME,
                 data: {
                     waterTemp: 22.5,
-                    currentSpeed: 1.9
+                    currentSpeed: 1.9,
+                    waterLevel: 2.8
                 }
             }
         ];
 
         // ** Step 4: Render Site Data as Clickable Entities **
         tideSites.forEach(site => {
+            // Light pillar effect
             viewer.entities.add({
                 id: `${site.id}-pillar`,
                 position: Cesium.Cartesian3.fromDegrees(site.lng, site.lat),
@@ -510,6 +529,7 @@
                 }
             });
 
+            // Clickable point
             viewer.entities.add({
                 id: site.id,
                 name: site.name,
@@ -537,6 +557,7 @@
                 properties: new Cesium.PropertyBag({
                     waterTemp: site.data.waterTemp,
                     currentSpeed: site.data.currentSpeed,
+                    waterLevel: site.data.waterLevel,
                     lat: site.lat,
                     lng: site.lng
                 })
@@ -547,46 +568,45 @@
         function updateDateTime() {
             const now = new Date();
             
-            // Format date: YYYY-MM-DD
             const year = now.getFullYear();
             const month = String(now.getMonth() + 1).padStart(2, '0');
             const day = String(now.getDate()).padStart(2, '0');
             document.getElementById('currentDate').textContent = `${year}-${month}-${day}`;
             
-            // Format time: HH:MM:SS
             const hours = String(now.getHours()).padStart(2, '0');
             const minutes = String(now.getMinutes()).padStart(2, '0');
             const seconds = String(now.getSeconds()).padStart(2, '0');
             document.getElementById('currentTime').textContent = `${hours}:${minutes}:${seconds}`;
         }
         
-        // Update time every second
         updateDateTime();
         setInterval(updateDateTime, 1000);
 
-        // ** Step 6: AI Prediction Generator (Simulated) **
-        function generateAIPredictions(basePower) {
-            // Simulate AI predictions based on current conditions
-            // In real application, this would call an AI model API
+        // ** Step 6: AI Prediction Generator (based on wave energy profile) **
+        function generateAIPredictions(currentSpeed, waterLevel) {
+            // Calculate base power using wave energy formula
+            // P ≈ 0.5 * ρ * g * H² * T (simplified)
+            // Here we use current speed and water level as proxies
+            const basePower = (currentSpeed * currentSpeed * waterLevel * 0.35);
             
             const predictions = {
                 h3: {
-                    value: (basePower * (0.9 + Math.random() * 0.4)).toFixed(1),
+                    value: (basePower * (0.85 + Math.random() * 0.3)).toFixed(1),
                     trend: Math.random() > 0.5 ? 'up' : 'stable',
                     confidence: 85 + Math.floor(Math.random() * 12)
                 },
                 h6: {
-                    value: (basePower * (0.8 + Math.random() * 0.6)).toFixed(1),
+                    value: (basePower * (0.75 + Math.random() * 0.5)).toFixed(1),
                     trend: Math.random() > 0.6 ? 'up' : (Math.random() > 0.5 ? 'down' : 'stable'),
                     confidence: 75 + Math.floor(Math.random() * 15)
                 },
                 h12: {
-                    value: (basePower * (0.7 + Math.random() * 0.8)).toFixed(1),
+                    value: (basePower * (0.65 + Math.random() * 0.7)).toFixed(1),
                     trend: Math.random() > 0.5 ? 'down' : (Math.random() > 0.5 ? 'up' : 'stable'),
                     confidence: 65 + Math.floor(Math.random() * 18)
                 },
                 h24: {
-                    value: (basePower * (0.6 + Math.random() * 1.0)).toFixed(1),
+                    value: (basePower * (0.55 + Math.random() * 0.9)).toFixed(1),
                     trend: Math.random() > 0.4 ? 'up' : (Math.random() > 0.5 ? 'down' : 'stable'),
                     confidence: 55 + Math.floor(Math.random() * 20)
                 }
@@ -611,15 +631,20 @@
                 
                 const waterTemp = props.waterTemp.getValue();
                 const currentSpeed = props.currentSpeed.getValue();
+                const waterLevel = props.waterLevel.getValue();
                 
                 document.getElementById('waterTemp').textContent = waterTemp.toFixed(1);
                 document.getElementById('currentSpeed').textContent = currentSpeed.toFixed(1);
+                document.getElementById('waterLevel').textContent = waterLevel.toFixed(1);
                 
-                // Calculate base power from current speed (simplified formula)
-                const basePower = currentSpeed * 0.9;
+                // Update coordinates
+                const lat = props.lat.getValue();
+                const lng = props.lng.getValue();
+                document.getElementById('coordinates').textContent = 
+                    `${Math.abs(lat).toFixed(2)}°${lat >= 0 ? 'N' : 'S'}, ${Math.abs(lng).toFixed(2)}°${lng >= 0 ? 'E' : 'W'}`;
                 
-                // Generate AI predictions
-                const predictions = generateAIPredictions(basePower);
+                // Generate predictions based on wave energy profile
+                const predictions = generateAIPredictions(currentSpeed, waterLevel);
                 
                 // Update prediction displays
                 document.getElementById('prediction3h').textContent = predictions.h3.value + ' MW';
@@ -638,18 +663,11 @@
                 updateTrendIndicator('trend12h', predictions.h12.trend);
                 updateTrendIndicator('trend24h', predictions.h24.trend);
                 
-                // Update coordinates
-                const lat = props.lat.getValue();
-                const lng = props.lng.getValue();
-                document.getElementById('coordinates').textContent = 
-                    `${Math.abs(lat).toFixed(2)}°${lat >= 0 ? 'N' : 'S'}, ${Math.abs(lng).toFixed(2)}°${lng >= 0 ? 'E' : 'W'}`;
-                
                 // Show the panel
                 document.getElementById('tideInfoPanel').style.display = 'block';
             }
         }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
 
-        // Helper function for trend indicators
         function updateTrendIndicator(elementId, trend) {
             const element = document.getElementById(elementId);
             element.className = 'trend-indicator';
@@ -669,19 +687,17 @@
             }
         }
 
-        // ** Helper Function: Hide Info Panel **
         window.hideInfoPanel = function() {
             document.getElementById('tideInfoPanel').style.display = 'none';
         };
 
-        // ESC key to close panel
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
                 hideInfoPanel();
             }
         });
 
-        console.log('🌊 CesiumJS Tidal Energy Globe loaded! With AI predictions enabled.');
+        console.log('🌊 CesiumJS Telemetry Buoy Network loaded! Three sensors active.');
     </script>
 </body>
 </html>
