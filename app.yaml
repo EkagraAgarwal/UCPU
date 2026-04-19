@@ -1,5 +1,5 @@
-name: BluePulse
-description: "High-Precision Ocean Wave Analysis and Marine Intelligence"
+name: TidalGate
+description: "Intelligent Ocean Energy Monitoring and Predictive Feed-Forward Control"
 ports: []
 bricks:
   - arduino:web_ui: {}
