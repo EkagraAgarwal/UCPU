@@ -282,7 +282,7 @@
             display: flex;
             align-items: center;
             gap: 5px;
-            margin-bottom: 8px;
+            margin-bottom: 4px;
         }
         
         .section-badge {
@@ -302,12 +302,22 @@
             color: white;
         }
         
+        /* 板块描述小字 */
+        .section-description {
+            margin: 0 0 8px 0;
+            font-size: 9px;
+            color: #6a8fa8;
+            font-style: italic;
+            letter-spacing: 0.2px;
+        }
+        
         .prediction-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 6px 0;
+            padding: 8px 0;
             border-bottom: 1px solid rgba(255,255,255,0.04);
+            min-height: 36px;
         }
         
         .prediction-item:last-child {
@@ -317,6 +327,7 @@
         .prediction-time {
             color: #a0bcd8;
             font-size: 11px;
+            width: 45px;
         }
         
         .prediction-value {
@@ -334,23 +345,6 @@
         .trend-up { color: #00ff88; }
         .trend-down { color: #ff6b6b; }
         .trend-stable { color: #ffd966; }
-        
-        /* 迷你分数条 */
-        .mini-score-bar {
-            flex: 1;
-            height: 6px;
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 3px;
-            overflow: hidden;
-        }
-        
-        .mini-score-fill {
-            height: 100%;
-            width: 0%;
-            background: linear-gradient(90deg, #ff6b6b, #ffd966, #00ff88);
-            border-radius: 3px;
-            transition: width 0.5s ease;
-        }
         
         .turbine-section {
             background: linear-gradient(135deg, rgba(0, 200, 150, 0.08) 0%, rgba(0, 100, 200, 0.06) 100%);
@@ -623,12 +617,13 @@
         </div>
         
         <div class="prediction-row">
-            <!-- Local Nowcast - 无百分比，无描述 -->
+            <!-- Local Nowcast -->
             <div class="prediction-section">
                 <div class="section-header">
                     <span>📡 Local Nowcast</span>
                     <span class="section-badge badge-local">Buoy</span>
                 </div>
+                <div class="section-description">Short-range wave arrival forecast</div>
                 
                 <div class="prediction-item">
                     <span class="prediction-time">30s</span>
@@ -653,44 +648,30 @@
                 </div>
             </div>
             
-            <!-- AI Power Score - 对接队友数据 -->
+            <!-- AI Power Score -->
             <div class="prediction-section">
                 <div class="section-header">
                     <span>🤖 AI Power Score</span>
                     <span class="section-badge badge-ai">ML</span>
                 </div>
+                <div class="section-description">Probabilistic tidal energy index</div>
                 
                 <div class="prediction-item">
                     <span class="prediction-time">1 hour</span>
-                    <span style="display: flex; align-items: center; gap: 8px;">
-                        <div class="mini-score-bar">
-                            <div class="mini-score-fill" id="score1hFill" style="width: 78%;"></div>
-                        </div>
-                        <span style="color: #ffd966; font-weight: 600; min-width: 45px; text-align: right;">
-                            <span id="score1h">78</span>/100
-                        </span>
+                    <span class="prediction-value">
+                        <span id="score1h">78</span>/100
                     </span>
                 </div>
                 <div class="prediction-item">
                     <span class="prediction-time">2 hours</span>
-                    <span style="display: flex; align-items: center; gap: 8px;">
-                        <div class="mini-score-bar">
-                            <div class="mini-score-fill" id="score2hFill" style="width: 65%;"></div>
-                        </div>
-                        <span style="color: #ffd966; font-weight: 600; min-width: 45px; text-align: right;">
-                            <span id="score2h">65</span>/100
-                        </span>
+                    <span class="prediction-value">
+                        <span id="score2h">65</span>/100
                     </span>
                 </div>
                 <div class="prediction-item">
                     <span class="prediction-time">3 hours</span>
-                    <span style="display: flex; align-items: center; gap: 8px;">
-                        <div class="mini-score-bar">
-                            <div class="mini-score-fill" id="score3hFill" style="width: 52%;"></div>
-                        </div>
-                        <span style="color: #ffd966; font-weight: 600; min-width: 45px; text-align: right;">
-                            <span id="score3h">52</span>/100
-                        </span>
+                    <span class="prediction-value">
+                        <span id="score3h">52</span>/100
                     </span>
                 </div>
             </div>
@@ -807,7 +788,6 @@
             batteryText.style.textShadow = level >= 3 ? '0 0 10px rgba(0,255,204,0.5)' : '0 0 10px rgba(0,0,0,0.7)';
         }
 
-        // 创建 Cesium 实体
         tideSites.forEach(site => {
             viewer.entities.add({
                 id: `${site.id}-pillar`,
@@ -827,7 +807,6 @@
             });
         });
 
-        // 时间更新
         function updateDateTime() {
             const now = new Date();
             document.getElementById('currentDate').textContent = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
@@ -836,7 +815,6 @@
         updateDateTime();
         setInterval(updateDateTime, 1000);
 
-        // 本地预测
         function generateLocalPredictions(currentSpeed, waveHeight) {
             const basePower = currentSpeed * currentSpeed * waveHeight * 0.35;
             const wavePeriod = 8 + waveHeight * 0.5;
@@ -853,7 +831,6 @@
             });
         }
 
-        // 涡轮机控制
         function updateTurbineControl(currentSpeed, waveHeight, status) {
             const basePower = currentSpeed * currentSpeed * waveHeight * 0.35;
             
@@ -882,7 +859,6 @@
             document.getElementById('tuningAction').textContent = actionText;
         }
 
-        // 更新趋势箭头
         function updateTrendIndicator(elementId, trend) {
             const element = document.getElementById(elementId);
             element.className = 'trend-indicator';
@@ -891,15 +867,11 @@
             else { element.classList.add('trend-stable'); element.textContent = '→'; }
         }
 
-        // ============================================================
-        // 数据刷新 - 对接队友的变量名
-        // ============================================================
         async function refreshDashboard() {
             try {
                 const res = await fetch('/data');
                 const data = await res.json();
                 
-                // 更新 AI Power Score (队友的变量)
                 const score1h = data.power_score_1h || 0;
                 const score2h = data.power_score_2h || 0;
                 const score3h = data.power_score_3h || 0;
@@ -908,14 +880,8 @@
                 document.getElementById('score2h').textContent = score2h;
                 document.getElementById('score3h').textContent = score3h;
                 
-                document.getElementById('score1hFill').style.width = score1h + '%';
-                document.getElementById('score2hFill').style.width = score2h + '%';
-                document.getElementById('score3hFill').style.width = score3h + '%';
-                
-                // 更新策略
                 document.getElementById('strategy').textContent = data.strategy || 'Predictive Feed-Forward';
                 
-                // 更新传感器数据
                 const temp = data.temperature || 0;
                 const depth = data.depth || 0;
                 const speed = data.speed || 0;
@@ -924,7 +890,6 @@
                 document.getElementById('depth').textContent = depth.toFixed(1);
                 document.getElementById('speed').textContent = speed.toFixed(2);
                 
-                // 根据分数更新状态
                 const avgScore = (score1h + score2h + score3h) / 3;
                 let status = 'Sense Only';
                 if (avgScore >= 70) status = 'Max Harvest';
@@ -935,7 +900,6 @@
                 updateBatteryStatus(status);
                 updateTurbineControl(speed, depth, status);
                 
-                // 更新本地预测
                 const localPreds = generateLocalPredictions(speed, depth);
                 document.getElementById('local30s').textContent = localPreds[0].value + ' MW';
                 document.getElementById('local60s').textContent = localPreds[1].value + ' MW';
@@ -950,13 +914,9 @@
             }
         }
 
-        // 每500ms刷新一次
         setInterval(refreshDashboard, 500);
-        refreshDashboard(); // 立即执行一次
+        refreshDashboard();
 
-        // ============================================================
-        // 点击交互
-        // ============================================================
         const handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
 
         handler.setInputAction(function(click) {
@@ -976,7 +936,7 @@
                 }
                 
                 document.getElementById('tideInfoPanel').style.display = 'block';
-                refreshDashboard(); // 打开面板时刷新数据
+                refreshDashboard();
             }
         }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
 
