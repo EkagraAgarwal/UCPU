@@ -94,7 +94,7 @@ diagnostics_printed = False
 # ----------------------------
 # Helpers
 # ----------------------------
-def curve_power_score(raw_value, raw_min=0.0, raw_max=45.0, gamma=1.6):
+def curve_power_score(raw_value, raw_min=0.0, raw_max=45.0, gamma=1.2):
     """
     Map raw model output from roughly 0-50 into a more spread-out 0-100 score.
 
