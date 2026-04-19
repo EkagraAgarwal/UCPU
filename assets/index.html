@@ -974,6 +974,51 @@
         }
 
         // ============================================================
+        // Live Data Polling (BluePulse Integration)
+        // ============================================================
+        async function fetchLiveData() {
+            try {
+                const response = await fetch('data');
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                
+                const data = await response.json();
+                console.log("BluePulse Data Received:", data);
+                
+                // Update the UI if the info panel is visible
+                const panel = document.getElementById('tideInfoPanel');
+                if (panel && panel.style.display === 'block') {
+                    // 1. Raw Sensors
+                    document.getElementById('waterTemp').textContent = data.temperature.toFixed(1);
+                    document.getElementById('currentSpeed').textContent = data.speed.toFixed(2);
+                    document.getElementById('waveHeight').textContent = data.depth.toFixed(1);
+                    
+                    // 2. ML Prediction (Marine Mode)
+                    // We'll use the first AI slot to show the real ML result
+                    document.getElementById('ai1h').textContent = data.prediction;
+                    document.getElementById('conf1h').textContent = (data.probability * 100).toFixed(0) + '%';
+                    updateTrendIndicator('trend1h', data.probability > 0.8 ? 'stable' : 'up');
+
+                    // 3. Dynamic Turbine Control based on real data
+                    updateTurbineControl(data.speed, data.depth, data.prediction.includes('Storm') ? 'Max Harvest' : 'Harvest Priority');
+                    
+                    // 4. Status Bar (Battery/Energy Mode)
+                    const statusMapping = {
+                        'Calm': 'Sense Only',
+                        'Moderate': 'Harvest Priority',
+                        'Rough': 'Max Harvest',
+                        'Stormy': 'Max Harvest'
+                    };
+                    updateBatteryStatus(statusMapping[data.prediction] || 'Sense Only');
+                }
+            } catch (error) {
+                console.error('Error fetching live data:', error);
+            }
+        }
+        
+        // Poll every 500ms for high-precision updates
+        setInterval(fetchLiveData, 500);
+
+        // ============================================================
         // 点击交互
         // ============================================================
         const handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
@@ -981,60 +1026,23 @@
         handler.setInputAction(function(click) {
             const pickedObject = viewer.scene.pick(click.position);
             
-            if (Cesium.defined(pickedObject) && Cesium.defined(pickedObject.id) && pickedObject.id.properties) {
+            if (Cesium.defined(pickedObject) && Cesium.defined(pickedObject.id)) {
                 const entity = pickedObject.id;
-                const props = entity.properties;
                 
-                document.getElementById('stationName').textContent = entity.name;
-                document.getElementById('stationDesc').textContent = entity.description;
+                // Update panel static content
+                document.getElementById('stationName').textContent = entity.name || "BluePulse Node";
+                document.getElementById('stationDesc').textContent = entity.description || "Real-time Marine Intelligence";
                 
-                const waterTemp = props.waterTemp.getValue();
-                const currentSpeed = props.currentSpeed.getValue();
-                const waveHeight = props.waveHeight.getValue();
-                const status = props.status.getValue();
+                // Coordinates
+                if (entity.position) {
+                    const cartographic = Cesium.Ellipsoid.WGS84.cartesianToCartographic(entity.position.getValue(Cesium.JulianDate.now()));
+                    const lat = Cesium.Math.toDegrees(cartographic.latitude);
+                    const lng = Cesium.Math.toDegrees(cartographic.longitude);
+                    document.getElementById('coordinates').textContent = 
+                        `${Math.abs(lat).toFixed(2)}°${lat >= 0 ? 'N' : 'S'}, ${Math.abs(lng).toFixed(2)}°${lng >= 0 ? 'E' : 'W'}`;
+                }
                 
-                document.getElementById('waterTemp').textContent = waterTemp.toFixed(1);
-                document.getElementById('currentSpeed').textContent = currentSpeed.toFixed(1);
-                document.getElementById('waveHeight').textContent = waveHeight.toFixed(1);
-                
-                updateBatteryStatus(status);
-                
-                const lat = props.lat.getValue();
-                const lng = props.lng.getValue();
-                document.getElementById('coordinates').textContent = 
-                    `${Math.abs(lat).toFixed(2)}°${lat >= 0 ? 'N' : 'S'}, ${Math.abs(lng).toFixed(2)}°${lng >= 0 ? 'E' : 'W'}`;
-                
-                // 本地预测（3个时间点）
-                const localPreds = generateLocalPredictions(currentSpeed, waveHeight);
-                document.getElementById('local30s').textContent = localPreds[0].value + ' MW';
-                document.getElementById('local60s').textContent = localPreds[1].value + ' MW';
-                document.getElementById('local90s').textContent = localPreds[2].value + ' MW';
-                
-                document.getElementById('conf30s').textContent = localPreds[0].confidence + '%';
-                document.getElementById('conf60s').textContent = localPreds[1].confidence + '%';
-                document.getElementById('conf90s').textContent = localPreds[2].confidence + '%';
-                
-                updateTrendIndicator('trend30s', localPreds[0].trend);
-                updateTrendIndicator('trend60s', localPreds[1].trend);
-                updateTrendIndicator('trend90s', localPreds[2].trend);
-                
-                // AI 预测
-                const aiPreds = generateAIPredictions(currentSpeed, waveHeight);
-                document.getElementById('ai1h').textContent = aiPreds.h1.value + ' MW';
-                document.getElementById('ai2h').textContent = aiPreds.h2.value + ' MW';
-                document.getElementById('ai3h').textContent = aiPreds.h3.value + ' MW';
-                
-                document.getElementById('conf1h').textContent = aiPreds.h1.confidence + '%';
-                document.getElementById('conf2h').textContent = aiPreds.h2.confidence + '%';
-                document.getElementById('conf3h').textContent = aiPreds.h3.confidence + '%';
-                
-                updateTrendIndicator('trend1h', aiPreds.h1.trend);
-                updateTrendIndicator('trend2h', aiPreds.h2.trend);
-                updateTrendIndicator('trend3h', aiPreds.h3.trend);
-                
-                // 涡轮机控制
-                updateTurbineControl(currentSpeed, waveHeight, status);
-                
+                // Show the panel - polling will now fill it with live data
                 document.getElementById('tideInfoPanel').style.display = 'block';
             }
         }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
