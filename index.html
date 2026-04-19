@@ -16,52 +16,232 @@
             overflow: hidden;
             font-family: 'Segoe UI', Arial, sans-serif;
         }
+        
         /* Custom Info Panel - Overlay on the globe */
         #tideInfoPanel {
             position: absolute;
             top: 20px;
             right: 20px;
-            width: 360px;
-            background: rgba(10, 20, 40, 0.85);
+            width: 400px;
+            max-height: 90vh;
+            overflow-y: auto;
+            background: rgba(10, 20, 40, 0.9);
             color: #e0f7fa;
-            border-radius: 12px;
-            padding: 20px;
-            backdrop-filter: blur(8px);
+            border-radius: 16px;
+            padding: 24px;
+            backdrop-filter: blur(10px);
             border-left: 4px solid #00ffcc;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.6);
             z-index: 1000;
-            display: none; /* Hidden by default */
-            pointer-events: none;
+            display: none;
+            pointer-events: auto;
             transition: opacity 0.3s ease;
         }
+        
+        /* Custom scrollbar */
+        #tideInfoPanel::-webkit-scrollbar {
+            width: 6px;
+        }
+        #tideInfoPanel::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.05);
+            border-radius: 3px;
+        }
+        #tideInfoPanel::-webkit-scrollbar-thumb {
+            background: #00ffcc;
+            border-radius: 3px;
+        }
+        
         #tideInfoPanel h2 {
-            margin: 0 0 8px 0;
+            margin: 0 0 4px 0;
             color: #00ffcc;
             font-size: 22px;
             text-shadow: 0 0 10px rgba(0,255,204,0.5);
         }
+        
+        #tideInfoPanel h3 {
+            color: #a0bcd8;
+            font-size: 16px;
+            margin: 16px 0 12px 0;
+            padding-bottom: 6px;
+            border-bottom: 1px solid rgba(0, 255, 204, 0.3);
+        }
+        
         #tideInfoPanel p {
             margin: 8px 0;
             line-height: 1.6;
-            font-size: 15px;
+            font-size: 14px;
         }
+        
+        .station-subtitle {
+            color: #8ab4d6;
+            font-size: 13px;
+            margin-bottom: 16px;
+        }
+        
         .data-highlight {
             color: #ffd966;
             font-weight: bold;
         }
+        
         .close-btn {
             position: absolute;
-            top: 10px;
-            right: 15px;
+            top: 16px;
+            right: 20px;
             color: #aaa;
             font-size: 24px;
             font-weight: bold;
             cursor: pointer;
-            pointer-events: auto; /* Allow clicking to close */
+            pointer-events: auto;
+            transition: color 0.2s;
         }
+        
         .close-btn:hover {
-            color: #fff;
+            color: #00ffcc;
         }
+        
+        /* Date and Time Display */
+        .datetime-section {
+            background: rgba(0, 255, 204, 0.1);
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin-bottom: 16px;
+            border: 1px solid rgba(0, 255, 204, 0.2);
+        }
+        
+        .datetime-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .date-display {
+            font-size: 16px;
+            font-weight: 600;
+            color: #e0f7fa;
+        }
+        
+        .time-display {
+            font-size: 20px;
+            font-weight: 700;
+            color: #00ffcc;
+            text-shadow: 0 0 8px rgba(0,255,204,0.5);
+        }
+        
+        /* Measurement Data Grid */
+        .measurement-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin: 16px 0;
+        }
+        
+        .measurement-card {
+            background: rgba(18, 42, 63, 0.6);
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .measurement-icon {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+        
+        .measurement-label {
+            color: #a0bcd8;
+            font-size: 13px;
+            margin-bottom: 6px;
+        }
+        
+        .measurement-value {
+            color: #ffd966;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        
+        .measurement-unit {
+            color: #8ab4d6;
+            font-size: 12px;
+            margin-left: 4px;
+        }
+        
+        /* AI Prediction Section */
+        .ai-section {
+            background: linear-gradient(135deg, rgba(0, 255, 204, 0.08) 0%, rgba(0, 150, 200, 0.05) 100%);
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 16px;
+            border: 1px solid rgba(0, 255, 204, 0.25);
+        }
+        
+        .ai-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        
+        .ai-badge {
+            background: #00ffcc;
+            color: #0a1428;
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+        
+        .prediction-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+        
+        .prediction-item:last-child {
+            border-bottom: none;
+        }
+        
+        .prediction-time {
+            color: #a0bcd8;
+            font-size: 14px;
+        }
+        
+        .prediction-value {
+            color: #ffd966;
+            font-weight: 600;
+            font-size: 16px;
+        }
+        
+        .trend-indicator {
+            display: inline-block;
+            margin-left: 6px;
+            font-size: 14px;
+        }
+        
+        .trend-up { color: #00ff88; }
+        .trend-down { color: #ff6b6b; }
+        .trend-stable { color: #ffd966; }
+        
+        .confidence-badge {
+            background: rgba(255,255,255,0.1);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            color: #8ab4d6;
+            margin-left: 8px;
+        }
+        
+        /* Coordinates Display */
+        .coordinates-section {
+            margin-top: 16px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            font-size: 13px;
+            color: #8ab4d6;
+        }
+        
         /* Legend */
         #legend {
             position: absolute;
@@ -77,6 +257,7 @@
             pointer-events: none;
             border: 1px solid #3a5a7a;
         }
+        
         .legend-dot {
             display: inline-block;
             width: 12px;
@@ -85,6 +266,7 @@
             margin-right: 6px;
             box-shadow: 0 0 15px currentColor;
         }
+        
         /* Title Label */
         #titleLabel {
             position: absolute;
@@ -102,6 +284,22 @@
             backdrop-filter: blur(5px);
             border: 1px solid rgba(255,255,255,0.2);
         }
+        
+        /* Live indicator */
+        .live-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: #00ff88;
+            border-radius: 50%;
+            margin-right: 6px;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
     </style>
 </head>
 <body>
@@ -114,19 +312,98 @@
     <!-- Custom Tidal Energy Information Panel -->
     <div id="tideInfoPanel">
         <span class="close-btn" onclick="hideInfoPanel()">&times;</span>
+        
         <h2 id="stationName">Station Name</h2>
-        <p><span class="data-highlight" id="stationDesc">Pacific Coastal Sensor Station</span></p>
-        <p>🌊 Tidal Energy Rating: <span class="data-highlight" id="energyRating">Excellent</span></p>
-        <p>🌡 Water Temperature: <span class="data-highlight" id="waterTemp">16°C</span></p>
-        <p>🌬 Wind Speed: <span class="data-highlight" id="windSpeed">Moderate</span></p>
-        <p>⚡ Estimated Power: <span class="data-highlight" id="powerOutput">2.5 MW</span></p>
-        <p>📅 Best Tidal Time: <span class="data-highlight" id="bestTime">06:30 / 18:45</span></p>
-        <p>📍 Coordinates: <span class="data-highlight" id="coordinates">34.30°N, 120.82°W</span></p>
+        <div class="station-subtitle" id="stationDesc">Pacific Coastal Sensor Station</div>
+        
+        <!-- Date and Time Section -->
+        <div class="datetime-section">
+            <div class="datetime-row">
+                <span class="date-display" id="currentDate">2024-01-15</span>
+                <span style="display: flex; align-items: center;">
+                    <span class="live-indicator"></span>
+                    <span class="time-display" id="currentTime">14:30:45</span>
+                </span>
+            </div>
+        </div>
+        
+        <!-- Measurement Data Section -->
+        <h3>📊 Real-time Measurements</h3>
+        <div class="measurement-grid">
+            <div class="measurement-card">
+                <div class="measurement-icon">🌡</div>
+                <div class="measurement-label">Water Temperature</div>
+                <div>
+                    <span class="measurement-value" id="waterTemp">16.5</span>
+                    <span class="measurement-unit">°C</span>
+                </div>
+            </div>
+            <div class="measurement-card">
+                <div class="measurement-icon">🌊</div>
+                <div class="measurement-label">Current Speed</div>
+                <div>
+                    <span class="measurement-value" id="currentSpeed">2.8</span>
+                    <span class="measurement-unit">m/s</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- AI Prediction Section -->
+        <div class="ai-section">
+            <div class="ai-header">
+                <span>🤖 AI Energy Forecast</span>
+                <span class="ai-badge">LSTM Model</span>
+            </div>
+            <p style="margin: 0 0 12px 0; font-size: 13px; color: #a0bcd8;">
+                Predicted tidal energy output based on current conditions
+            </p>
+            
+            <div class="prediction-item">
+                <span class="prediction-time">Next 3 hours</span>
+                <span>
+                    <span class="prediction-value" id="prediction3h">2.8 MW</span>
+                    <span class="trend-indicator trend-up" id="trend3h">↗</span>
+                    <span class="confidence-badge" id="confidence3h">92%</span>
+                </span>
+            </div>
+            
+            <div class="prediction-item">
+                <span class="prediction-time">Next 6 hours</span>
+                <span>
+                    <span class="prediction-value" id="prediction6h">3.4 MW</span>
+                    <span class="trend-indicator trend-up" id="trend6h">↗</span>
+                    <span class="confidence-badge" id="confidence6h">87%</span>
+                </span>
+            </div>
+            
+            <div class="prediction-item">
+                <span class="prediction-time">Next 12 hours</span>
+                <span>
+                    <span class="prediction-value" id="prediction12h">2.1 MW</span>
+                    <span class="trend-indicator trend-down" id="trend12h">↘</span>
+                    <span class="confidence-badge" id="confidence12h">76%</span>
+                </span>
+            </div>
+            
+            <div class="prediction-item">
+                <span class="prediction-time">Next 24 hours</span>
+                <span>
+                    <span class="prediction-value" id="prediction24h">3.9 MW</span>
+                    <span class="trend-indicator trend-up" id="trend24h">↗</span>
+                    <span class="confidence-badge" id="confidence24h">68%</span>
+                </span>
+            </div>
+        </div>
+        
+        <!-- Coordinates -->
+        <div class="coordinates-section">
+            📍 Coordinates: <span class="data-highlight" id="coordinates">34.30°N, 120.82°W</span>
+        </div>
     </div>
 
     <!-- Legend -->
     <div id="legend">
-        <span><span class="legend-dot" style="background: #00ffcc;"></span>Tidal Energy Monitoring Station (Click for details)</span>
+        <span><span class="legend-dot" style="background: #00ffcc;"></span>Tidal Energy Station (Click for details)</span>
     </div>
 
     <script>
@@ -135,25 +412,23 @@
 
         // ** Step 2: Initialize Cesium Viewer **
         const viewer = new Cesium.Viewer('cesiumContainer', {
-            // Hide unnecessary default UI controls for a cleaner interface
-            geocoder: false,         // Search box
-            homeButton: false,       // Home button
-            sceneModePicker: false,  // View mode switcher
-            baseLayerPicker: false,  // Base map switcher
-            navigationHelpButton: false, // Help button
-            animation: false,        // Animation control
-            timeline: false,         // Timeline
-            fullscreenButton: false, // Fullscreen button
-            infoBox: false,          // Disable Cesium's default info box, we use our own
-            selectionIndicator: false // Disable selection indicator
+            geocoder: false,
+            homeButton: false,
+            sceneModePicker: false,
+            baseLayerPicker: false,
+            navigationHelpButton: false,
+            animation: false,
+            timeline: false,
+            fullscreenButton: false,
+            infoBox: false,
+            selectionIndicator: false
         });
 
-        // Set initial view to focus on our first site (California Coast)
         viewer.camera.setView({
-            destination: Cesium.Cartesian3.fromDegrees(-120.815728, 34.303973, 2500000) // lng, lat, altitude(m)
+            destination: Cesium.Cartesian3.fromDegrees(-120.815728, 34.303973, 2500000)
         });
 
-        // ** Step 3: Prepare Tidal Energy Site Data **
+        // ** Step 3: Tidal Energy Site Data (only water temp and current speed) **
         const tideSites = [
             {
                 id: 'site1',
@@ -163,11 +438,8 @@
                 lng: -120.815728,
                 color: Cesium.Color.CYAN,
                 data: {
-                    energyRating: 'Excellent',
-                    waterTemp: '16°C',
-                    windSpeed: 'Moderate',
-                    powerOutput: '2.5 MW',
-                    bestTime: '06:30 / 18:45'
+                    waterTemp: 16.5,
+                    currentSpeed: 2.8
                 }
             },
             {
@@ -178,11 +450,8 @@
                 lng: -123.958632,
                 color: Cesium.Color.ORANGERED,
                 data: {
-                    energyRating: 'Outstanding',
-                    waterTemp: '12°C',
-                    windSpeed: 'Strong',
-                    powerOutput: '3.8 MW',
-                    bestTime: '05:15 / 17:30'
+                    waterTemp: 12.3,
+                    currentSpeed: 3.5
                 }
             },
             {
@@ -193,11 +462,8 @@
                 lng: 10.752245,
                 color: Cesium.Color.GOLD,
                 data: {
-                    energyRating: 'Good',
-                    waterTemp: '8°C',
-                    windSpeed: 'Moderate',
-                    powerOutput: '1.8 MW',
-                    bestTime: '08:00 / 20:15'
+                    waterTemp: 8.2,
+                    currentSpeed: 2.1
                 }
             },
             {
@@ -208,11 +474,8 @@
                 lng: -64.1903,
                 color: Cesium.Color.MAGENTA,
                 data: {
-                    energyRating: 'Exceptional',
-                    waterTemp: '10°C',
-                    windSpeed: 'Variable',
-                    powerOutput: '5.2 MW',
-                    bestTime: '03:45 / 16:20'
+                    waterTemp: 10.8,
+                    currentSpeed: 5.2
                 }
             },
             {
@@ -223,25 +486,21 @@
                 lng: 122.0587,
                 color: Cesium.Color.LIME,
                 data: {
-                    energyRating: 'Very Good',
-                    waterTemp: '22°C',
-                    windSpeed: 'Light',
-                    powerOutput: '2.1 MW',
-                    bestTime: '09:30 / 21:45'
+                    waterTemp: 22.5,
+                    currentSpeed: 1.9
                 }
             }
         ];
 
-        // ** Step 4: Render Site Data as Clickable Entities on the Globe **
+        // ** Step 4: Render Site Data as Clickable Entities **
         tideSites.forEach(site => {
-            // Add a vertical line as a "light pillar" effect for better visibility
             viewer.entities.add({
                 id: `${site.id}-pillar`,
                 position: Cesium.Cartesian3.fromDegrees(site.lng, site.lat),
                 polyline: {
                     positions: [
-                        Cesium.Cartesian3.fromDegrees(site.lng, site.lat, 0), // Ground level
-                        Cesium.Cartesian3.fromDegrees(site.lng, site.lat, 150000) // Height 150km
+                        Cesium.Cartesian3.fromDegrees(site.lng, site.lat, 0),
+                        Cesium.Cartesian3.fromDegrees(site.lng, site.lat, 150000)
                     ],
                     width: 2,
                     material: new Cesium.PolylineGlowMaterialProperty({
@@ -251,8 +510,7 @@
                 }
             });
 
-            // Add the core "point" entity for click interaction
-            const entity = viewer.entities.add({
+            viewer.entities.add({
                 id: site.id,
                 name: site.name,
                 description: site.desc,
@@ -263,7 +521,7 @@
                     outlineColor: Cesium.Color.WHITE,
                     outlineWidth: 2,
                     heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
-                    disableDepthTestDistance: Number.POSITIVE_INFINITY // Keep point always on top
+                    disableDepthTestDistance: Number.POSITIVE_INFINITY
                 },
                 label: {
                     text: site.name,
@@ -273,43 +531,114 @@
                     outlineWidth: 2,
                     style: Cesium.LabelStyle.FILL_AND_OUTLINE,
                     verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
-                    pixelOffset: new Cesium.Cartesian2(0, -30), // Offset to avoid covering the point
-                    distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 5000000) // Hide label when far away
+                    pixelOffset: new Cesium.Cartesian2(0, -30),
+                    distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 5000000)
                 },
-                // **Key**: Attach custom tidal data to the entity's properties
                 properties: new Cesium.PropertyBag({
-                    energyRating: site.data.energyRating,
                     waterTemp: site.data.waterTemp,
-                    windSpeed: site.data.windSpeed,
-                    powerOutput: site.data.powerOutput,
-                    bestTime: site.data.bestTime,
+                    currentSpeed: site.data.currentSpeed,
                     lat: site.lat,
                     lng: site.lng
                 })
             });
         });
 
-        // ** Step 5: Add Click Interaction using ScreenSpaceEventHandler **
+        // ** Step 5: Date and Time Update Function **
+        function updateDateTime() {
+            const now = new Date();
+            
+            // Format date: YYYY-MM-DD
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            document.getElementById('currentDate').textContent = `${year}-${month}-${day}`;
+            
+            // Format time: HH:MM:SS
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            document.getElementById('currentTime').textContent = `${hours}:${minutes}:${seconds}`;
+        }
+        
+        // Update time every second
+        updateDateTime();
+        setInterval(updateDateTime, 1000);
+
+        // ** Step 6: AI Prediction Generator (Simulated) **
+        function generateAIPredictions(basePower) {
+            // Simulate AI predictions based on current conditions
+            // In real application, this would call an AI model API
+            
+            const predictions = {
+                h3: {
+                    value: (basePower * (0.9 + Math.random() * 0.4)).toFixed(1),
+                    trend: Math.random() > 0.5 ? 'up' : 'stable',
+                    confidence: 85 + Math.floor(Math.random() * 12)
+                },
+                h6: {
+                    value: (basePower * (0.8 + Math.random() * 0.6)).toFixed(1),
+                    trend: Math.random() > 0.6 ? 'up' : (Math.random() > 0.5 ? 'down' : 'stable'),
+                    confidence: 75 + Math.floor(Math.random() * 15)
+                },
+                h12: {
+                    value: (basePower * (0.7 + Math.random() * 0.8)).toFixed(1),
+                    trend: Math.random() > 0.5 ? 'down' : (Math.random() > 0.5 ? 'up' : 'stable'),
+                    confidence: 65 + Math.floor(Math.random() * 18)
+                },
+                h24: {
+                    value: (basePower * (0.6 + Math.random() * 1.0)).toFixed(1),
+                    trend: Math.random() > 0.4 ? 'up' : (Math.random() > 0.5 ? 'down' : 'stable'),
+                    confidence: 55 + Math.floor(Math.random() * 20)
+                }
+            };
+            
+            return predictions;
+        }
+
+        // ** Step 7: Click Interaction **
         const handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
 
         handler.setInputAction(function(click) {
-            // 1. Pick the object at the click position
             const pickedObject = viewer.scene.pick(click.position);
             
-            // 2. Check if the picked object is an Entity with custom properties
             if (Cesium.defined(pickedObject) && Cesium.defined(pickedObject.id) && pickedObject.id.properties) {
                 const entity = pickedObject.id;
                 const props = entity.properties;
                 
-                // 3. Update and display the custom info panel
+                // Update panel content
                 document.getElementById('stationName').textContent = entity.name;
                 document.getElementById('stationDesc').textContent = entity.description;
-                document.getElementById('energyRating').textContent = props.energyRating.getValue();
-                document.getElementById('waterTemp').textContent = props.waterTemp.getValue();
-                document.getElementById('windSpeed').textContent = props.windSpeed.getValue();
-                document.getElementById('powerOutput').textContent = props.powerOutput.getValue();
-                document.getElementById('bestTime').textContent = props.bestTime.getValue();
                 
+                const waterTemp = props.waterTemp.getValue();
+                const currentSpeed = props.currentSpeed.getValue();
+                
+                document.getElementById('waterTemp').textContent = waterTemp.toFixed(1);
+                document.getElementById('currentSpeed').textContent = currentSpeed.toFixed(1);
+                
+                // Calculate base power from current speed (simplified formula)
+                const basePower = currentSpeed * 0.9;
+                
+                // Generate AI predictions
+                const predictions = generateAIPredictions(basePower);
+                
+                // Update prediction displays
+                document.getElementById('prediction3h').textContent = predictions.h3.value + ' MW';
+                document.getElementById('prediction6h').textContent = predictions.h6.value + ' MW';
+                document.getElementById('prediction12h').textContent = predictions.h12.value + ' MW';
+                document.getElementById('prediction24h').textContent = predictions.h24.value + ' MW';
+                
+                document.getElementById('confidence3h').textContent = predictions.h3.confidence + '%';
+                document.getElementById('confidence6h').textContent = predictions.h6.confidence + '%';
+                document.getElementById('confidence12h').textContent = predictions.h12.confidence + '%';
+                document.getElementById('confidence24h').textContent = predictions.h24.confidence + '%';
+                
+                // Update trend indicators
+                updateTrendIndicator('trend3h', predictions.h3.trend);
+                updateTrendIndicator('trend6h', predictions.h6.trend);
+                updateTrendIndicator('trend12h', predictions.h12.trend);
+                updateTrendIndicator('trend24h', predictions.h24.trend);
+                
+                // Update coordinates
                 const lat = props.lat.getValue();
                 const lng = props.lng.getValue();
                 document.getElementById('coordinates').textContent = 
@@ -317,27 +646,42 @@
                 
                 // Show the panel
                 document.getElementById('tideInfoPanel').style.display = 'block';
-            } else {
-                // Optionally hide panel when clicking empty space
-                // hideInfoPanel();
             }
         }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+
+        // Helper function for trend indicators
+        function updateTrendIndicator(elementId, trend) {
+            const element = document.getElementById(elementId);
+            element.className = 'trend-indicator';
+            
+            switch(trend) {
+                case 'up':
+                    element.classList.add('trend-up');
+                    element.textContent = '↗';
+                    break;
+                case 'down':
+                    element.classList.add('trend-down');
+                    element.textContent = '↘';
+                    break;
+                default:
+                    element.classList.add('trend-stable');
+                    element.textContent = '→';
+            }
+        }
 
         // ** Helper Function: Hide Info Panel **
         window.hideInfoPanel = function() {
             document.getElementById('tideInfoPanel').style.display = 'none';
         };
 
-        // Optional: Close panel when clicking on empty space
-        // Uncomment the lines below if you want clicking empty space to close the panel
-        /*
-        handler.setInputAction(function() {
-            hideInfoPanel();
-        }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
-        */
+        // ESC key to close panel
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                hideInfoPanel();
+            }
+        });
 
-        // ** Startup Complete Message **
-        console.log('🌊 CesiumJS Tidal Energy Globe loaded! Click on the glowing points to view data.');
+        console.log('🌊 CesiumJS Tidal Energy Globe loaded! With AI predictions enabled.');
     </script>
 </body>
 </html>
