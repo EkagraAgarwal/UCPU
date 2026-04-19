@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CesiumJS - Tidal Energy Monitoring Globe</title>
+    <!-- CesiumJS Core Library and Styles -->
+    <script src="https://cesium.com/downloads/cesiumjs/releases/1.100/Build/Cesium/Cesium.js"></script>
+    <link href="https://cesium.com/downloads/cesiumjs/releases/1.100/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+    <style>
+        html, body, #cesiumContainer {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+        /* Custom Info Panel - Overlay on the globe */
+        #tideInfoPanel {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 360px;
+            background: rgba(10, 20, 40, 0.85);
+            color: #e0f7fa;
+            border-radius: 12px;
+            padding: 20px;
+            backdrop-filter: blur(8px);
+            border-left: 4px solid #00ffcc;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+            z-index: 1000;
+            display: none; /* Hidden by default */
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        #tideInfoPanel h2 {
+            margin: 0 0 8px 0;
+            color: #00ffcc;
+            font-size: 22px;
+            text-shadow: 0 0 10px rgba(0,255,204,0.5);
+        }
+        #tideInfoPanel p {
+            margin: 8px 0;
+            line-height: 1.6;
+            font-size: 15px;
+        }
+        .data-highlight {
+            color: #ffd966;
+            font-weight: bold;
+        }
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            color: #aaa;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            pointer-events: auto; /* Allow clicking to close */
+        }
+        .close-btn:hover {
+            color: #fff;
+        }
+        /* Legend */
+        #legend {
+            position: absolute;
+            bottom: 30px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 30px;
+            backdrop-filter: blur(5px);
+            font-size: 14px;
+            z-index: 1000;
+            pointer-events: none;
+            border: 1px solid #3a5a7a;
+        }
+        .legend-dot {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 6px;
+            box-shadow: 0 0 15px currentColor;
+        }
+        /* Title Label */
+        #titleLabel {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
+            z-index: 1000;
+            pointer-events: none;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 8px 20px;
+            border-radius: 30px;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+    </style>
+</head>
+<body>
+    <!-- Cesium Globe Container -->
+    <div id="cesiumContainer"></div>
+
+    <!-- Title -->
+    <div id="titleLabel">🌊 Tidal Energy Monitoring Network</div>
+
+    <!-- Custom Tidal Energy Information Panel -->
+    <div id="tideInfoPanel">
+        <span class="close-btn" onclick="hideInfoPanel()">&times;</span>
+        <h2 id="stationName">Station Name</h2>
+        <p><span class="data-highlight" id="stationDesc">Pacific Coastal Sensor Station</span></p>
+        <p>🌊 Tidal Energy Rating: <span class="data-highlight" id="energyRating">Excellent</span></p>
+        <p>🌡 Water Temperature: <span class="data-highlight" id="waterTemp">16°C</span></p>
+        <p>🌬 Wind Speed: <span class="data-highlight" id="windSpeed">Moderate</span></p>
+        <p>⚡ Estimated Power: <span class="data-highlight" id="powerOutput">2.5 MW</span></p>
+        <p>📅 Best Tidal Time: <span class="data-highlight" id="bestTime">06:30 / 18:45</span></p>
+        <p>📍 Coordinates: <span class="data-highlight" id="coordinates">34.30°N, 120.82°W</span></p>
+    </div>
+
+    <!-- Legend -->
+    <div id="legend">
+        <span><span class="legend-dot" style="background: #00ffcc;"></span>Tidal Energy Monitoring Station (Click for details)</span>
+    </div>
+
+    <script>
+        // ** Step 1: Set Cesium Ion Access Token **
+        Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI3NzE2NDc0OC1jYTg0LTRiODYtODExMS1iZDkxY2MwNzc2Y2YiLCJpZCI6NDIwMDc0LCJpYXQiOjE3NzY1NTY3NDB9.f4Tu6UJDyQcu8D0_CdvTJfasG2N0egiV53w16K5CGz4';
+
+        // ** Step 2: Initialize Cesium Viewer **
+        const viewer = new Cesium.Viewer('cesiumContainer', {
+            // Hide unnecessary default UI controls for a cleaner interface
+            geocoder: false,         // Search box
+            homeButton: false,       // Home button
+            sceneModePicker: false,  // View mode switcher
+            baseLayerPicker: false,  // Base map switcher
+            navigationHelpButton: false, // Help button
+            animation: false,        // Animation control
+            timeline: false,         // Timeline
+            fullscreenButton: false, // Fullscreen button
+            infoBox: false,          // Disable Cesium's default info box, we use our own
+            selectionIndicator: false // Disable selection indicator
+        });
+
+        // Set initial view to focus on our first site (California Coast)
+        viewer.camera.setView({
+            destination: Cesium.Cartesian3.fromDegrees(-120.815728, 34.303973, 2500000) // lng, lat, altitude(m)
+        });
+
+        // ** Step 3: Prepare Tidal Energy Site Data **
+        const tideSites = [
+            {
+                id: 'site1',
+                name: 'Central California Coast',
+                desc: 'Pacific Coastal Sensor Station',
+                lat: 34.303973,
+                lng: -120.815728,
+                color: Cesium.Color.CYAN,
+                data: {
+                    energyRating: 'Excellent',
+                    waterTemp: '16°C',
+                    windSpeed: 'Moderate',
+                    powerOutput: '2.5 MW',
+                    bestTime: '06:30 / 18:45'
+                }
+            },
+            {
+                id: 'site2',
+                name: 'Oregon Coastal Station',
+                desc: 'Pacific Northwest Tidal Zone',
+                lat: 45.638728,
+                lng: -123.958632,
+                color: Cesium.Color.ORANGERED,
+                data: {
+                    energyRating: 'Outstanding',
+                    waterTemp: '12°C',
+                    windSpeed: 'Strong',
+                    powerOutput: '3.8 MW',
+                    bestTime: '05:15 / 17:30'
+                }
+            },
+            {
+                id: 'site3',
+                name: 'Oslo Fjord Station',
+                desc: 'Norwegian Tidal Research Center',
+                lat: 59.913869,
+                lng: 10.752245,
+                color: Cesium.Color.GOLD,
+                data: {
+                    energyRating: 'Good',
+                    waterTemp: '8°C',
+                    windSpeed: 'Moderate',
+                    powerOutput: '1.8 MW',
+                    bestTime: '08:00 / 20:15'
+                }
+            },
+            {
+                id: 'site4',
+                name: 'Bay of Fundy Station',
+                desc: 'Highest Tides in the World',
+                lat: 45.2589,
+                lng: -64.1903,
+                color: Cesium.Color.MAGENTA,
+                data: {
+                    energyRating: 'Exceptional',
+                    waterTemp: '10°C',
+                    windSpeed: 'Variable',
+                    powerOutput: '5.2 MW',
+                    bestTime: '03:45 / 16:20'
+                }
+            },
+            {
+                id: 'site5',
+                name: 'East China Sea Station',
+                desc: 'Offshore Tidal Farm',
+                lat: 28.3712,
+                lng: 122.0587,
+                color: Cesium.Color.LIME,
+                data: {
+                    energyRating: 'Very Good',
+                    waterTemp: '22°C',
+                    windSpeed: 'Light',
+                    powerOutput: '2.1 MW',
+                    bestTime: '09:30 / 21:45'
+                }
+            }
+        ];
+
+        // ** Step 4: Render Site Data as Clickable Entities on the Globe **
+        tideSites.forEach(site => {
+            // Add a vertical line as a "light pillar" effect for better visibility
+            viewer.entities.add({
+                id: `${site.id}-pillar`,
+                position: Cesium.Cartesian3.fromDegrees(site.lng, site.lat),
+                polyline: {
+                    positions: [
+                        Cesium.Cartesian3.fromDegrees(site.lng, site.lat, 0), // Ground level
+                        Cesium.Cartesian3.fromDegrees(site.lng, site.lat, 150000) // Height 150km
+                    ],
+                    width: 2,
+                    material: new Cesium.PolylineGlowMaterialProperty({
+                        glowPower: 0.2,
+                        color: site.color.withAlpha(0.6)
+                    })
+                }
+            });
+
+            // Add the core "point" entity for click interaction
+            const entity = viewer.entities.add({
+                id: site.id,
+                name: site.name,
+                description: site.desc,
+                position: Cesium.Cartesian3.fromDegrees(site.lng, site.lat, 0),
+                point: {
+                    pixelSize: 18,
+                    color: site.color,
+                    outlineColor: Cesium.Color.WHITE,
+                    outlineWidth: 2,
+                    heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
+                    disableDepthTestDistance: Number.POSITIVE_INFINITY // Keep point always on top
+                },
+                label: {
+                    text: site.name,
+                    font: '14px sans-serif',
+                    fillColor: Cesium.Color.WHITE,
+                    outlineColor: Cesium.Color.BLACK,
+                    outlineWidth: 2,
+                    style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+                    verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
+                    pixelOffset: new Cesium.Cartesian2(0, -30), // Offset to avoid covering the point
+                    distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 5000000) // Hide label when far away
+                },
+                // **Key**: Attach custom tidal data to the entity's properties
+                properties: new Cesium.PropertyBag({
+                    energyRating: site.data.energyRating,
+                    waterTemp: site.data.waterTemp,
+                    windSpeed: site.data.windSpeed,
+                    powerOutput: site.data.powerOutput,
+                    bestTime: site.data.bestTime,
+                    lat: site.lat,
+                    lng: site.lng
+                })
+            });
+        });
+
+        // ** Step 5: Add Click Interaction using ScreenSpaceEventHandler **
+        const handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
+
+        handler.setInputAction(function(click) {
+            // 1. Pick the object at the click position
+            const pickedObject = viewer.scene.pick(click.position);
+            
+            // 2. Check if the picked object is an Entity with custom properties
+            if (Cesium.defined(pickedObject) && Cesium.defined(pickedObject.id) && pickedObject.id.properties) {
+                const entity = pickedObject.id;
+                const props = entity.properties;
+                
+                // 3. Update and display the custom info panel
+                document.getElementById('stationName').textContent = entity.name;
+                document.getElementById('stationDesc').textContent = entity.description;
+                document.getElementById('energyRating').textContent = props.energyRating.getValue();
+                document.getElementById('waterTemp').textContent = props.waterTemp.getValue();
+                document.getElementById('windSpeed').textContent = props.windSpeed.getValue();
+                document.getElementById('powerOutput').textContent = props.powerOutput.getValue();
+                document.getElementById('bestTime').textContent = props.bestTime.getValue();
+                
+                const lat = props.lat.getValue();
+                const lng = props.lng.getValue();
+                document.getElementById('coordinates').textContent = 
+                    `${Math.abs(lat).toFixed(2)}°${lat >= 0 ? 'N' : 'S'}, ${Math.abs(lng).toFixed(2)}°${lng >= 0 ? 'E' : 'W'}`;
+                
+                // Show the panel
+                document.getElementById('tideInfoPanel').style.display = 'block';
+            } else {
+                // Optionally hide panel when clicking empty space
+                // hideInfoPanel();
+            }
+        }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+
+        // ** Helper Function: Hide Info Panel **
+        window.hideInfoPanel = function() {
+            document.getElementById('tideInfoPanel').style.display = 'none';
+        };
+
+        // Optional: Close panel when clicking on empty space
+        // Uncomment the lines below if you want clicking empty space to close the panel
+        /*
+        handler.setInputAction(function() {
+            hideInfoPanel();
+        }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+        */
+
+        // ** Startup Complete Message **
+        console.log('🌊 CesiumJS Tidal Energy Globe loaded! Click on the glowing points to view data.');
+    </script>
+</body>
+</html>
