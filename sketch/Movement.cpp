@@ -3,7 +3,8 @@
 
 void MovementTracker::begin() {
     while (!movement.begin()) { delay(500); }
-    prevMicros = micros(); // Initialize to avoid huge dt on first frame
+    calibrate(); // Establish zero-point and initial orientation
+    prevMicros = micros(); 
 }
 
 void MovementTracker::calibrate() {
