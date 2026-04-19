@@ -42,7 +42,14 @@ void loop() {
   // 2. Update visualizer
   gui.drawDepth(env.getDepth());
 
-  // 3. Log data (Throttled for stability)
+  // 3. Share data with Qualcomm chip (Bridge)
+  Bridge.set("temperature", env.getTemperature());
+  Bridge.set("depth", env.getDepth());
+  Bridge.set("speed", tracker.getSpeed());
+  Bridge.set("roll", tracker.getRoll());
+  Bridge.set("pitch", tracker.getPitch());
+
+  // 4. Log data (Throttled for stability)
   static unsigned long lastLog = 0;
   if (millis() - lastLog >= 100) {
     lastLog = millis();

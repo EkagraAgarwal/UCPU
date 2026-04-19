@@ -582,38 +582,32 @@
         updateDateTime();
         setInterval(updateDateTime, 1000);
 
-        // ** Step 6: AI Prediction Generator (based on wave energy profile) **
-        function generateAIPredictions(currentSpeed, waterLevel) {
-            // Calculate base power using wave energy formula
-            // P ≈ 0.5 * ρ * g * H² * T (simplified)
-            // Here we use current speed and water level as proxies
-            const basePower = (currentSpeed * currentSpeed * waterLevel * 0.35);
-            
-            const predictions = {
-                h3: {
-                    value: (basePower * (0.85 + Math.random() * 0.3)).toFixed(1),
-                    trend: Math.random() > 0.5 ? 'up' : 'stable',
-                    confidence: 85 + Math.floor(Math.random() * 12)
-                },
-                h6: {
-                    value: (basePower * (0.75 + Math.random() * 0.5)).toFixed(1),
-                    trend: Math.random() > 0.6 ? 'up' : (Math.random() > 0.5 ? 'down' : 'stable'),
-                    confidence: 75 + Math.floor(Math.random() * 15)
-                },
-                h12: {
-                    value: (basePower * (0.65 + Math.random() * 0.7)).toFixed(1),
-                    trend: Math.random() > 0.5 ? 'down' : (Math.random() > 0.5 ? 'up' : 'stable'),
-                    confidence: 65 + Math.floor(Math.random() * 18)
-                },
-                h24: {
-                    value: (basePower * (0.55 + Math.random() * 0.9)).toFixed(1),
-                    trend: Math.random() > 0.4 ? 'up' : (Math.random() > 0.5 ? 'down' : 'stable'),
-                    confidence: 55 + Math.floor(Math.random() * 20)
+        // ** Step 6: Live Data Polling (BluePulse Integration) **
+        async function fetchLiveData() {
+            try {
+                const response = await fetch('/data');
+                const data = await response.json();
+                
+                // Update the UI if the info panel is visible
+                if (document.getElementById('tideInfoPanel').style.display === 'block') {
+                    document.getElementById('waterTemp').textContent = data.temperature.toFixed(1);
+                    document.getElementById('currentSpeed').textContent = data.speed.toFixed(2);
+                    document.getElementById('waterLevel').textContent = data.depth.toFixed(1);
+                    
+                    // Update AI Predictions with real ML output
+                    document.getElementById('prediction3h').textContent = data.prediction;
+                    document.getElementById('confidence3h').textContent = (data.probability * 100).toFixed(0) + '%';
+                    
+                    // Update trend indicator based on probability or state
+                    updateTrendIndicator('trend3h', data.probability > 0.8 ? 'stable' : 'up');
                 }
-            };
-            
-            return predictions;
+            } catch (error) {
+                console.error('Error fetching live data:', error);
+            }
         }
+        
+        // Poll every 500ms for high-precision updates
+        setInterval(fetchLiveData, 500);
 
         // ** Step 7: Click Interaction **
         const handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
@@ -621,49 +615,23 @@
         handler.setInputAction(function(click) {
             const pickedObject = viewer.scene.pick(click.position);
             
-            if (Cesium.defined(pickedObject) && Cesium.defined(pickedObject.id) && pickedObject.id.properties) {
+            if (Cesium.defined(pickedObject) && Cesium.defined(pickedObject.id)) {
                 const entity = pickedObject.id;
-                const props = entity.properties;
                 
-                // Update panel content
-                document.getElementById('stationName').textContent = entity.name;
-                document.getElementById('stationDesc').textContent = entity.description;
+                // Update panel static content
+                document.getElementById('stationName').textContent = entity.name || "BluePulse Node";
+                document.getElementById('stationDesc').textContent = entity.description || "Real-time Marine Intelligence";
                 
-                const waterTemp = props.waterTemp.getValue();
-                const currentSpeed = props.currentSpeed.getValue();
-                const waterLevel = props.waterLevel.getValue();
+                // Coordinates
+                if (entity.position) {
+                    const cartographic = Cesium.Ellipsoid.WGS84.cartesianToCartographic(entity.position.getValue(Cesium.JulianDate.now()));
+                    const lat = Cesium.Math.toDegrees(cartographic.latitude);
+                    const lng = Cesium.Math.toDegrees(cartographic.longitude);
+                    document.getElementById('coordinates').textContent = 
+                        `${Math.abs(lat).toFixed(2)}°${lat >= 0 ? 'N' : 'S'}, ${Math.abs(lng).toFixed(2)}°${lng >= 0 ? 'E' : 'W'}`;
+                }
                 
-                document.getElementById('waterTemp').textContent = waterTemp.toFixed(1);
-                document.getElementById('currentSpeed').textContent = currentSpeed.toFixed(1);
-                document.getElementById('waterLevel').textContent = waterLevel.toFixed(1);
-                
-                // Update coordinates
-                const lat = props.lat.getValue();
-                const lng = props.lng.getValue();
-                document.getElementById('coordinates').textContent = 
-                    `${Math.abs(lat).toFixed(2)}°${lat >= 0 ? 'N' : 'S'}, ${Math.abs(lng).toFixed(2)}°${lng >= 0 ? 'E' : 'W'}`;
-                
-                // Generate predictions based on wave energy profile
-                const predictions = generateAIPredictions(currentSpeed, waterLevel);
-                
-                // Update prediction displays
-                document.getElementById('prediction3h').textContent = predictions.h3.value + ' MW';
-                document.getElementById('prediction6h').textContent = predictions.h6.value + ' MW';
-                document.getElementById('prediction12h').textContent = predictions.h12.value + ' MW';
-                document.getElementById('prediction24h').textContent = predictions.h24.value + ' MW';
-                
-                document.getElementById('confidence3h').textContent = predictions.h3.confidence + '%';
-                document.getElementById('confidence6h').textContent = predictions.h6.confidence + '%';
-                document.getElementById('confidence12h').textContent = predictions.h12.confidence + '%';
-                document.getElementById('confidence24h').textContent = predictions.h24.confidence + '%';
-                
-                // Update trend indicators
-                updateTrendIndicator('trend3h', predictions.h3.trend);
-                updateTrendIndicator('trend6h', predictions.h6.trend);
-                updateTrendIndicator('trend12h', predictions.h12.trend);
-                updateTrendIndicator('trend24h', predictions.h24.trend);
-                
-                // Show the panel
+                // Show the panel - polling will now fill it with live data
                 document.getElementById('tideInfoPanel').style.display = 'block';
             }
         }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
